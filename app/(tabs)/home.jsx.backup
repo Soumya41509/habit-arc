@@ -120,37 +120,13 @@ export default function Home() {
             await saveTask({
                 title: newTaskTitle,
                 time: newTaskTime,
-                notes: newTaskNotes,
                 priority: 'medium',
             });
             setNewTaskTitle('');
             setNewTaskTime('');
-            setNewTaskNotes('');
             setShowAddTask(false);
             loadData();
         }
-    };
-
-    const handleTaskTimeConfirm = () => {
-        const formattedTime = `${selectedHour}:${selectedMinute.toString().padStart(2, '0')} ${selectedPeriod}`;
-        setNewTaskTime(formattedTime);
-        setShowTaskTimePicker(false);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    };
-
-    const handleHourSelect = (hour) => {
-        setSelectedHour(hour);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    };
-
-    const handleMinuteSelect = (minute) => {
-        setSelectedMinute(minute);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    };
-
-    const handlePeriodSelect = (period) => {
-        setSelectedPeriod(period);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     };
 
     const handleResetData = async () => {
@@ -256,38 +232,24 @@ export default function Home() {
                         </View>
                     ) : (
                         tasks.map((task) => {
-                            const renderActions = () => (
-                                <View style={styles.swipeActionsContainer}>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setSelectedTask(task);
-                                            setShowTaskDetails(true);
-                                        }}
-                                        style={styles.infoAction}
-                                    >
-                                        <Ionicons name="information-circle" size={24} color="#FFFFFF" />
-                                        <Text style={styles.infoText}>Details</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={async () => {
-                                            await deleteTask(task.id);
-                                            setTasks(tasks.filter(t => t.id !== task.id));
-                                        }}
-                                        style={styles.deleteAction}
-                                    >
-                                        <Ionicons name="trash" size={24} color="#FFFFFF" />
-                                        <Text style={styles.deleteText}>Delete</Text>
-                                    </TouchableOpacity>
-                                </View>
+                            const renderRightActions = () => (
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        await deleteTask(task.id);
+                                        setTasks(tasks.filter(t => t.id !== task.id));
+                                    }}
+                                    style={styles.deleteAction}
+                                >
+                                    <Ionicons name="trash" size={24} color="#FFFFFF" />
+                                    <Text style={styles.deleteText}>Delete</Text>
+                                </TouchableOpacity>
                             );
 
                             return (
                                 <Swipeable
                                     key={task.id}
-                                    renderRightActions={renderActions}
-                                    renderLeftActions={renderActions}
+                                    renderRightActions={renderRightActions}
                                     overshootRight={false}
-                                    overshootLeft={false}
                                 >
                                     <TouchableOpacity
                                         onPress={() => toggleTask(task.id)}
@@ -306,11 +268,6 @@ export default function Home() {
                                             ]}>
                                                 {task.title}
                                             </Text>
-                                            {task.notes && task.notes.trim() && (
-                                                <Text style={[styles.taskNotes, { color: colors.subtext }]} numberOfLines={2}>
-                                                    {task.notes}
-                                                </Text>
-                                            )}
                                             {task.duration && (
                                                 <Text style={[styles.taskDuration, { color: colors.subtext }]}>
                                                     {task.duration} min
@@ -328,6 +285,22 @@ export default function Home() {
                         })
                     )}
                 </GlassView>
+
+                {/* Quick Actions */}
+                <View style={styles.quickActions}>
+                    <TouchableOpacity onPress={() => setShowAddTask(true)} style={styles.quickButton}>
+                        <GlassView style={styles.quickButtonInner}>
+                            <Ionicons name="add" size={24} color={colors.primary} />
+                        </GlassView>
+                        <Text style={[styles.quickLabel, { color: colors.subtext }]}>Task</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => addWater(300)} style={styles.quickButton}>
+                        <GlassView style={styles.quickButtonInner}>
+                            <Ionicons name="water" size={24} color={colors.accent} />
+                        </GlassView>
+                        <Text style={[styles.quickLabel, { color: colors.subtext }]}>Water</Text>
+                    </TouchableOpacity>
+                </View>
 
                 {/* HabitArc Panel */}
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>HabitArc</Text>
@@ -513,221 +486,6 @@ export default function Home() {
                     </View>
                 </View>
             </Modal>
-
-            {/* Floating Action Button */}
-            <TouchableOpacity
-                style={styles.fab}
-                onPress={() => setShowAddTask(true)}
-            >
-                <GlassView style={styles.fabIcon}>
-                    <Ionicons name="add" size={30} color="#FFFFFF" />
-                </GlassView>
-            </TouchableOpacity>
-
-            {/* Add Task Modal */}
-            <Modal visible={showAddTask} animationType="slide" transparent onRequestClose={() => setShowAddTask(false)}>
-                <View style={styles.modalOverlay}>
-                    <GlassView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.text }]}>New Task</Text>
-                            <TouchableOpacity onPress={() => setShowAddTask(false)} style={styles.closeButton}>
-                                <Ionicons name="close" size={24} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView style={styles.modalBody}>
-                            <TextInput
-                                style={[styles.input, { color: colors.text, borderColor: colors.glassBorder, backgroundColor: colors.glass }]}
-                                placeholder="Task Title"
-                                placeholderTextColor={colors.subtext}
-                                value={newTaskTitle}
-                                onChangeText={setNewTaskTitle}
-                            />
-
-                            <TouchableOpacity onPress={() => setShowTaskTimePicker(true)}>
-                                <GlassView style={styles.inputContainer}>
-                                    <View style={styles.timeDisplayRow}>
-                                        <Text style={[styles.input, {
-                                            color: newTaskTime ? colors.text : colors.subtext,
-                                            borderWidth: 0,
-                                            marginBottom: 0,
-                                            flex: 1
-                                        }]}>
-                                            {newTaskTime || 'Select time'}
-                                        </Text>
-                                        <Ionicons name="chevron-down" size={20} color={colors.subtext} />
-                                    </View>
-                                </GlassView>
-                            </TouchableOpacity>
-
-                            <TextInput
-                                style={[styles.input, styles.textArea, { color: colors.text, borderColor: colors.glassBorder, backgroundColor: colors.glass }]}
-                                placeholder="Notes (Optional)"
-                                placeholderTextColor={colors.subtext}
-                                value={newTaskNotes}
-                                onChangeText={setNewTaskNotes}
-                                multiline
-                                numberOfLines={3}
-                            />
-
-                            <TouchableOpacity
-                                style={[styles.addButton, { backgroundColor: colors.primary }]}
-                                onPress={handleAddTask}
-                            >
-                                <Text style={styles.addButtonText}>Add Task</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
-                    </GlassView>
-                </View>
-            </Modal>
-
-            {/* Time Picker Modal */}
-            <Modal visible={showTaskTimePicker} animationType="slide" transparent onRequestClose={() => setShowTaskTimePicker(false)}>
-                <View style={styles.modalOverlay}>
-                    <GlassView style={[styles.timePickerModal, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.text }]}>Select Time</Text>
-                            <TouchableOpacity onPress={() => setShowTaskTimePicker(false)}>
-                                <Ionicons name="close" size={24} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.pickerContainer}>
-                            {/* Hours */}
-                            <ScrollView style={styles.pickerColumn} showsVerticalScrollIndicator={false}>
-                                {[...Array(12).keys()].map(i => {
-                                    const hour = i + 1;
-                                    return (
-                                        <TouchableOpacity
-                                            key={hour}
-                                            style={[styles.pickerItem, selectedHour === hour && styles.selectedPickerItem]}
-                                            onPress={() => handleHourSelect(hour)}
-                                        >
-                                            <Text style={[
-                                                styles.pickerItemText,
-                                                { color: colors.subtext },
-                                                selectedHour === hour && { color: colors.primary, fontWeight: 'bold' }
-                                            ]}>{hour}</Text>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </ScrollView>
-
-                            <Text style={{ color: colors.text, fontSize: 24, alignSelf: 'center' }}>:</Text>
-
-                            {/* Minutes */}
-                            <ScrollView style={styles.pickerColumn} showsVerticalScrollIndicator={false}>
-                                {[...Array(60).keys()].map(i => {
-                                    return (
-                                        <TouchableOpacity
-                                            key={i}
-                                            style={[styles.pickerItem, selectedMinute === i && styles.selectedPickerItem]}
-                                            onPress={() => handleMinuteSelect(i)}
-                                        >
-                                            <Text style={[
-                                                styles.pickerItemText,
-                                                { color: colors.subtext },
-                                                selectedMinute === i && { color: colors.primary, fontWeight: 'bold' }
-                                            ]}>{i.toString().padStart(2, '0')}</Text>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </ScrollView>
-
-                            {/* Period */}
-                            <ScrollView style={styles.pickerColumn} showsVerticalScrollIndicator={false}>
-                                {['AM', 'PM'].map(period => (
-                                    <TouchableOpacity
-                                        key={period}
-                                        style={[styles.pickerItem, selectedPeriod === period && styles.selectedPickerItem]}
-                                        onPress={() => handlePeriodSelect(period)}
-                                    >
-                                        <Text style={[
-                                            styles.pickerItemText,
-                                            { color: colors.subtext },
-                                            selectedPeriod === period && { color: colors.primary, fontWeight: 'bold' }
-                                        ]}>{period}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                        <TouchableOpacity
-                            style={[styles.confirmButton, { backgroundColor: colors.primary }]}
-                            onPress={handleTaskTimeConfirm}
-                        >
-                            <Text style={styles.confirmButtonText}>Set Time</Text>
-                        </TouchableOpacity>
-                    </GlassView>
-                </View>
-            </Modal>
-
-            {/* Task Details Modal */}
-            <Modal visible={showTaskDetails} animationType="fade" transparent onRequestClose={() => setShowTaskDetails(false)}>
-                <View style={styles.detailsOverlay}>
-                    <TouchableOpacity style={styles.detailsOverlayTouch} activeOpacity={1} onPress={() => setShowTaskDetails(false)} />
-                    <View style={[styles.detailsCard, { backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }]}>
-                        <View style={styles.detailsHeader}>
-                            <View style={[styles.detailsIconContainer, { backgroundColor: colors.primary + '20' }]}>
-                                <Ionicons name="document-text" size={28} color={colors.primary} />
-                            </View>
-                            <TouchableOpacity onPress={() => setShowTaskDetails(false)} style={[styles.detailsCloseButton, { backgroundColor: colors.glass }]}>
-                                <Ionicons name="close" size={24} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-
-                        {selectedTask && (
-                            <ScrollView showsVerticalScrollIndicator={false} style={styles.detailsContent}>
-                                <Text style={[styles.detailsTitle, { color: colors.text }]}>{selectedTask.title}</Text>
-
-                                <View style={styles.detailsRow}>
-                                    <View style={[styles.detailsTag, { backgroundColor: colors.primary + '15' }]}>
-                                        <Ionicons name="time" size={16} color={colors.primary} />
-                                        <Text style={{ color: colors.primary, fontWeight: '600' }}>{selectedTask.time}</Text>
-                                    </View>
-                                    <View style={[styles.detailsTag, { backgroundColor: getPriorityColor(selectedTask.priority) + '15' }]}>
-                                        <Ionicons name="flag" size={16} color={getPriorityColor(selectedTask.priority)} />
-                                        <Text style={{ color: getPriorityColor(selectedTask.priority), fontWeight: '600' }}>
-                                            {selectedTask.priority.charAt(0).toUpperCase() + selectedTask.priority.slice(1)} Priority
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.detailsSection}>
-                                    <View style={styles.detailsSectionHeader}>
-                                        <Ionicons name="checkbox" size={20} color={selectedTask.completed ? colors.accent : colors.subtext} />
-                                        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>Status</Text>
-                                    </View>
-                                    <Text style={{ color: selectedTask.completed ? colors.accent : colors.subtext, fontSize: 15, paddingLeft: 28 }}>
-                                        {selectedTask.completed ? 'Completed' : 'Pending'}
-                                    </Text>
-                                </View>
-
-                                {selectedTask.notes && (
-                                    <View style={styles.detailsSection}>
-                                        <View style={styles.detailsSectionHeader}>
-                                            <Ionicons name="text" size={20} color={colors.text} />
-                                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>Notes</Text>
-                                        </View>
-                                        <View style={[styles.detailsNotesBox, { backgroundColor: isDark ? '#374151' : '#F3F4F6' }]}>
-                                            <Text style={[styles.detailsNotes, { color: colors.text }]}>{selectedTask.notes}</Text>
-                                        </View>
-                                    </View>
-                                )}
-
-                                {selectedTask.duration && (
-                                    <View style={styles.detailsSection}>
-                                        <View style={styles.detailsSectionHeader}>
-                                            <Ionicons name="hourglass" size={20} color={colors.text} />
-                                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>Duration</Text>
-                                        </View>
-                                        <Text style={{ color: colors.subtext, fontSize: 15, paddingLeft: 28 }}>
-                                            {selectedTask.duration} minutes
-                                        </Text>
-                                    </View>
-                                )}
-                            </ScrollView>
-                        )}
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 }
@@ -833,44 +591,4 @@ const styles = StyleSheet.create({
     appInfo: { fontSize: 14, lineHeight: 24 },
     dangerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 16, gap: 8 },
     dangerText: { fontSize: 16, fontWeight: '600' },
-
-    // Additional Styles
-    fabIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#4F46E5', justifyContent: 'center', alignItems: 'center' },
-    closeButton: { padding: 4 },
-    inputContainer: { marginBottom: 16, borderRadius: 16, overflow: 'hidden' },
-    timeDisplayRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: 'rgba(255,255,255,0.05)' },
-    textArea: { height: 100, textAlignVertical: 'top' },
-
-    // Time Picker
-    timePickerModal: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, height: 400 },
-    pickerContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 200, marginBottom: 24 },
-    pickerColumn: { width: 60, height: 200 },
-    pickerItem: { height: 50, justifyContent: 'center', alignItems: 'center' },
-    pickerItemText: { fontSize: 20 },
-    selectedPickerItem: { backgroundColor: 'rgba(79, 70, 229, 0.1)', borderRadius: 8 },
-    confirmButton: { padding: 16, borderRadius: 16, alignItems: 'center' },
-    confirmButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
-
-    // Task Details
-    detailsOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.75)', justifyContent: 'center', padding: 20, zIndex: 9999 },
-    detailsOverlayTouch: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
-    detailsCard: { borderRadius: 24, padding: 24, maxHeight: '85%', width: '100%', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 15, zIndex: 2 },
-    detailsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    detailsIconContainer: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
-    detailsCloseButton: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-    detailsTitle: { fontSize: 24, fontWeight: '700', marginBottom: 16, lineHeight: 32 },
-    detailsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-    detailsTag: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-    detailsSection: { marginBottom: 20 },
-    detailsSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-    detailsNotesBox: { padding: 16, borderRadius: 16 },
-    detailsNotes: { fontSize: 15, lineHeight: 22 },
-
-    // Swipe Actions
-    swipeActionsContainer: { flexDirection: 'row', alignItems: 'center' },
-    infoAction: { backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center', width: 80, height: '100%' },
-    infoText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginTop: 4 },
-    deleteAction: { backgroundColor: '#EF4444', justifyContent: 'center', alignItems: 'center', width: 80, height: '100%' },
-    deleteText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginTop: 4 },
-    taskNotes: { fontSize: 14, marginTop: 4 },
 });
