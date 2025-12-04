@@ -44,6 +44,16 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="timeline"
+                options={{
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <View style={{ alignItems: 'center', justifyContent: 'center', top: 10 }}>
+                            <Ionicons name={focused ? "time" : "time-outline"} size={28} color={color} />
+                        </View>
+                    ),
+                }}
+            />
+            <Tabs.Screen
                 name="wellness"
                 options={{
                     tabBarIcon: ({ color, size, focused }) => (

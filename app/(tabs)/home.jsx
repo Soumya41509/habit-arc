@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import {
     getHabits, getTodayLogs, logHabitCompletion, removeHabitCompletion, getOverallStats,
-    getTodayTasks, saveTask, updateTask, deleteTask,
+    getTodayTasks, saveTask, updateTask, deleteTask, saveHabit, deleteHabit,
     getWaterLogs, getWaterGoal, logWater, getMoodEntries, getSleepSessions,
     clearAllData
 } from '../../lib/storage';
@@ -34,6 +34,7 @@ export default function Home() {
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskTime, setNewTaskTime] = useState('');
     const [newTaskNotes, setNewTaskNotes] = useState('');
+    const [newTaskDuration, setNewTaskDuration] = useState('');
     const [showTaskTimePicker, setShowTaskTimePicker] = useState(false);
     const [selectedHour, setSelectedHour] = useState(6);
     const [selectedMinute, setSelectedMinute] = useState(0);
@@ -43,6 +44,18 @@ export default function Home() {
     const [userName, setUserName] = useState('');
     const [editName, setEditName] = useState('');
     const [isEditingName, setIsEditingName] = useState(false);
+    const [showManageHabits, setShowManageHabits] = useState(false);
+    const [showAddHabitForm, setShowAddHabitForm] = useState(false);
+    const [allHabits, setAllHabits] = useState([]);
+    const [habitTitle, setHabitTitle] = useState('');
+    const [habitTime, setHabitTime] = useState('');
+    const [habitIcon, setHabitIcon] = useState('fitness');
+    const [habitFrequency, setHabitFrequency] = useState('Daily');
+    const [showHabitTimePicker, setShowHabitTimePicker] = useState(false);
+    const [habitHour, setHabitHour] = useState(6);
+    const [habitMinute, setHabitMinute] = useState(0);
+    const [habitPeriod, setHabitPeriod] = useState('AM');
+
 
     const loadData = async () => {
         // Habits
@@ -121,11 +134,13 @@ export default function Home() {
                 title: newTaskTitle,
                 time: newTaskTime,
                 notes: newTaskNotes,
+                duration: newTaskDuration,
                 priority: 'medium',
             });
             setNewTaskTitle('');
             setNewTaskTime('');
             setNewTaskNotes('');
+            setNewTaskDuration('');
             setShowAddTask(false);
             loadData();
         }
@@ -181,6 +196,106 @@ export default function Home() {
     const addWater = async (amount) => {
         await logWater(amount);
         setWaterToday(waterToday + amount);
+    };
+
+    const handleOpenManageHabits = async () => {
+        const loadedHabits = await getHabits();
+        setAllHabits(loadedHabits);
+        setShowManageHabits(true);
+    };
+
+    const handleSaveHabit = async () => {
+        if (!habitTitle.trim()) {
+            Alert.alert('Error', 'Please enter a habit title');
+            return;
+        }
+
+        await saveHabit({
+            title: habitTitle.trim(),
+            time: habitTime,
+            icon: habitIcon,
+            frequency: habitFrequency,
+        });
+
+        // Reset form
+        setHabitTitle('');
+        setHabitTime('');
+        setHabitIcon('fitness');
+        setHabitFrequency('Daily');
+        setShowAddHabitForm(false);
+
+        // Reload habits
+        const loadedHabits = await getHabits();
+        setAllHabits(loadedHabits);
+        await loadData();
+    };
+
+    const handleDeleteHabit = async (habitId) => {
+        Alert.alert(
+            'Delete Habit',
+            'Are you sure you want to delete this habit?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteHabit(habitId);
+                        const loadedHabits = await getHabits();
+                        setAllHabits(loadedHabits);
+                        await loadData();
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleHabitTimeConfirm = () => {
+        const formattedTime = `${habitHour}:${habitMinute.toString().padStart(2, '0')} ${habitPeriod}`;
+        setHabitTime(formattedTime);
+        setShowHabitTimePicker(false);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    };
+
+    const handleHabitHourSelect = (hour) => {
+        setHabitHour(hour);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
+
+    const handleHabitMinuteSelect = (minute) => {
+        setHabitMinute(minute);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
+
+    const handleHabitPeriodSelect = (period) => {
+        setHabitPeriod(period);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    };
+
+    const getEndTime = (startTime, duration) => {
+        if (!startTime || !duration) return null;
+        try {
+            const [time, period] = startTime.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+
+            const date = new Date();
+            date.setHours(hours);
+            date.setMinutes(minutes + parseInt(duration));
+
+            let endHours = date.getHours();
+            const endMinutes = date.getMinutes();
+            const endPeriod = endHours >= 12 ? 'PM' : 'AM';
+
+            if (endHours > 12) endHours -= 12;
+            if (endHours === 0) endHours = 12;
+
+            return `${endHours}:${endMinutes.toString().padStart(2, '0')} ${endPeriod}`;
+        } catch (e) {
+            return null;
+        }
     };
 
     const getGreeting = () => {
@@ -246,89 +361,6 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Timeline */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Today's Timeline</Text>
-                <GlassView style={styles.timelineContainer}>
-                    {tasks.length === 0 ? (
-                        <View style={styles.emptyTimeline}>
-                            <Ionicons name="calendar-outline" size={40} color={colors.subtext} style={{ opacity: 0.5 }} />
-                            <Text style={[styles.emptyText, { color: colors.subtext }]}>No tasks scheduled</Text>
-                        </View>
-                    ) : (
-                        tasks.map((task) => {
-                            const renderActions = () => (
-                                <View style={styles.swipeActionsContainer}>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setSelectedTask(task);
-                                            setShowTaskDetails(true);
-                                        }}
-                                        style={styles.infoAction}
-                                    >
-                                        <Ionicons name="information-circle" size={24} color="#FFFFFF" />
-                                        <Text style={styles.infoText}>Details</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={async () => {
-                                            await deleteTask(task.id);
-                                            setTasks(tasks.filter(t => t.id !== task.id));
-                                        }}
-                                        style={styles.deleteAction}
-                                    >
-                                        <Ionicons name="trash" size={24} color="#FFFFFF" />
-                                        <Text style={styles.deleteText}>Delete</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            );
-
-                            return (
-                                <Swipeable
-                                    key={task.id}
-                                    renderRightActions={renderActions}
-                                    renderLeftActions={renderActions}
-                                    overshootRight={false}
-                                    overshootLeft={false}
-                                >
-                                    <TouchableOpacity
-                                        onPress={() => toggleTask(task.id)}
-                                        style={[styles.taskCard, {
-                                            borderLeftColor: getPriorityColor(task.priority),
-                                            opacity: task.completed ? 0.6 : 1,
-                                        }]}
-                                    >
-                                        <View style={styles.taskTime}>
-                                            <Text style={[styles.timeText, { color: colors.primary }]}>{task.time}</Text>
-                                        </View>
-                                        <View style={styles.taskInfo}>
-                                            <Text style={[
-                                                styles.taskTitle,
-                                                { color: colors.text, textDecorationLine: task.completed ? 'line-through' : 'none' }
-                                            ]}>
-                                                {task.title}
-                                            </Text>
-                                            {task.notes && task.notes.trim() && (
-                                                <Text style={[styles.taskNotes, { color: colors.subtext }]} numberOfLines={2}>
-                                                    {task.notes}
-                                                </Text>
-                                            )}
-                                            {task.duration && (
-                                                <Text style={[styles.taskDuration, { color: colors.subtext }]}>
-                                                    {task.duration} min
-                                                </Text>
-                                            )}
-                                        </View>
-                                        <Ionicons
-                                            name={task.completed ? "checkmark-circle" : "ellipse-outline"}
-                                            size={24}
-                                            color={task.completed ? colors.accent : colors.subtext}
-                                        />
-                                    </TouchableOpacity>
-                                </Swipeable>
-                            );
-                        })
-                    )}
-                </GlassView>
-
                 {/* HabitArc Panel */}
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>HabitArc</Text>
                 <GlassView style={styles.habitPanel}>
@@ -365,49 +397,19 @@ export default function Home() {
                 <View style={{ height: 100 }} />
             </ScrollView>
 
-            {/* FAB */}
+            {/* FAB - Add Habit Button */}
             <TouchableOpacity
                 style={[styles.fab, { backgroundColor: colors.primary }]}
-                onPress={() => setShowAddTask(true)}
+                onPress={async () => {
+                    const loadedHabits = await getHabits();
+                    setAllHabits(loadedHabits);
+                    setShowManageHabits(true);
+                    setShowAddHabitForm(true);
+                }}
             >
                 <Ionicons name="add" size={32} color="#FFFFFF" />
             </TouchableOpacity>
 
-            {/* Add Task Modal */}
-            <Modal visible={showAddTask} animationType="slide" transparent onRequestClose={() => setShowAddTask(false)}>
-                <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.text }]}>Add Task</Text>
-                            <TouchableOpacity onPress={() => setShowAddTask(false)}>
-                                <Ionicons name="close" size={28} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.modalBody}>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: colors.glass, color: colors.text, borderColor: colors.glassBorder }]}
-                                placeholder="Task title"
-                                placeholderTextColor={colors.subtext}
-                                value={newTaskTitle}
-                                onChangeText={setNewTaskTitle}
-                            />
-                            <TextInput
-                                style={[styles.input, { backgroundColor: colors.glass, color: colors.text, borderColor: colors.glassBorder }]}
-                                placeholder="Time (e.g., 14:00)"
-                                placeholderTextColor={colors.subtext}
-                                value={newTaskTime}
-                                onChangeText={setNewTaskTime}
-                            />
-                            <TouchableOpacity
-                                style={[styles.addButton, { backgroundColor: colors.primary }]}
-                                onPress={handleAddTask}
-                            >
-                                <Text style={styles.addButtonText}>Add Task</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
 
             {/* Profile Modal */}
             <Modal visible={showProfile} animationType="slide" transparent onRequestClose={() => setShowProfile(false)}>
@@ -452,21 +454,6 @@ export default function Home() {
                                         </TouchableOpacity>
                                     )}
                                 </View>
-                            </GlassView>
-
-                            {/* Add Habit Button */}
-                            <GlassView style={styles.settingSection}>
-                                <Text style={[styles.settingTitle, { color: colors.text }]}>Manage Habits</Text>
-                                <TouchableOpacity
-                                    style={[styles.addHabitBtn, { backgroundColor: colors.secondary + '20' }]}
-                                    onPress={() => {
-                                        setShowProfile(false);
-                                        router.push('/add-habit');
-                                    }}
-                                >
-                                    <Ionicons name="star" size={24} color={colors.secondary} />
-                                    <Text style={[styles.addHabitText, { color: colors.secondary }]}>Add New Habit</Text>
-                                </TouchableOpacity>
                             </GlassView>
 
                             {/* Theme Section */}
@@ -526,57 +513,105 @@ export default function Home() {
 
             {/* Add Task Modal */}
             <Modal visible={showAddTask} animationType="slide" transparent onRequestClose={() => setShowAddTask(false)}>
-                <View style={styles.modalOverlay}>
-                    <GlassView style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.text }]}>New Task</Text>
-                            <TouchableOpacity onPress={() => setShowAddTask(false)} style={styles.closeButton}>
-                                <Ionicons name="close" size={24} color={colors.text} />
-                            </TouchableOpacity>
-                        </View>
-                        <ScrollView style={styles.modalBody}>
+                <View style={[styles.newTaskModalOverlay, { backgroundColor: colors.background }]}>
+                    <View style={styles.newTaskHeader}>
+                        <TouchableOpacity onPress={() => setShowAddTask(false)} style={styles.newTaskCloseBtn}>
+                            <Ionicons name="close" size={28} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={[styles.newTaskHeaderTitle, { color: colors.text }]}>New Task</Text>
+                    </View>
+
+                    <ScrollView style={styles.newTaskBody} showsVerticalScrollIndicator={false}>
+                        {/* What? Section */}
+                        <Text style={[styles.newTaskLabel, { color: colors.subtext }]}>What?</Text>
+                        <View style={styles.newTaskInputContainer}>
+                            <Ionicons name="create-outline" size={24} color={colors.primary} style={styles.newTaskInputIcon} />
                             <TextInput
-                                style={[styles.input, { color: colors.text, borderColor: colors.glassBorder, backgroundColor: colors.glass }]}
-                                placeholder="Task Title"
+                                style={[styles.newTaskInput, { color: colors.text, borderBottomColor: colors.primary }]}
+                                placeholder="Task title"
                                 placeholderTextColor={colors.subtext}
                                 value={newTaskTitle}
                                 onChangeText={setNewTaskTitle}
+                                autoFocus
                             />
+                        </View>
 
-                            <TouchableOpacity onPress={() => setShowTaskTimePicker(true)}>
-                                <GlassView style={styles.inputContainer}>
-                                    <View style={styles.timeDisplayRow}>
-                                        <Text style={[styles.input, {
-                                            color: newTaskTime ? colors.text : colors.subtext,
-                                            borderWidth: 0,
-                                            marginBottom: 0,
-                                            flex: 1
-                                        }]}>
-                                            {newTaskTime || 'Select time'}
-                                        </Text>
-                                        <Ionicons name="chevron-down" size={20} color={colors.subtext} />
-                                    </View>
-                                </GlassView>
-                            </TouchableOpacity>
+                        {/* Time & Duration Picker */}
+                        <TouchableOpacity
+                            onPress={() => setShowTaskTimePicker(true)}
+                            style={[styles.newTaskTimeCard, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}
+                        >
+                            <Ionicons name="time-outline" size={20} color={colors.primary} />
+                            <View style={styles.newTaskTimeInfo}>
+                                <Text style={[styles.newTaskTimeText, { color: colors.text }]}>
+                                    {newTaskTime || 'Select time'}
+                                </Text>
+                                {newTaskDuration && (
+                                    <Text style={[styles.newTaskDurationText, { color: colors.subtext }]}>
+                                        ({newTaskDuration}m)
+                                    </Text>
+                                )}
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={colors.subtext} />
+                        </TouchableOpacity>
 
+                        {/* Duration Input */}
+                        <View style={[styles.newTaskTimeCard, { backgroundColor: colors.glass, borderColor: colors.glassBorder, marginTop: 12 }]}>
+                            <Ionicons name="hourglass-outline" size={20} color={colors.primary} />
                             <TextInput
-                                style={[styles.input, styles.textArea, { color: colors.text, borderColor: colors.glassBorder, backgroundColor: colors.glass }]}
-                                placeholder="Notes (Optional)"
+                                style={[styles.newTaskDurationInput, { color: colors.text }]}
+                                placeholder="Duration (minutes)"
                                 placeholderTextColor={colors.subtext}
-                                value={newTaskNotes}
-                                onChangeText={setNewTaskNotes}
-                                multiline
-                                numberOfLines={3}
+                                value={newTaskDuration}
+                                onChangeText={setNewTaskDuration}
+                                keyboardType="numeric"
                             />
+                        </View>
 
-                            <TouchableOpacity
-                                style={[styles.addButton, { backgroundColor: colors.primary }]}
-                                onPress={handleAddTask}
-                            >
-                                <Text style={styles.addButtonText}>Add Task</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
-                    </GlassView>
+                        {/* Recent/Suggested Tasks */}
+                        {tasks.length > 0 && (
+                            <>
+                                <Text style={[styles.newTaskSectionLabel, { color: colors.subtext }]}>Recent Tasks</Text>
+                                {tasks.slice(0, 5).map((task, idx) => (
+                                    <TouchableOpacity
+                                        key={idx}
+                                        style={[styles.suggestedTaskCard, { backgroundColor: colors.glass + '80', borderColor: colors.glassBorder }]}
+                                        onPress={() => {
+                                            setNewTaskTitle(task.title);
+                                            setNewTaskTime(task.time);
+                                            setNewTaskDuration(task.duration?.toString() || '');
+                                        }}
+                                    >
+                                        <View style={[styles.suggestedTaskIcon, { backgroundColor: colors.primary + '20' }]}>
+                                            <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                                        </View>
+                                        <View style={styles.suggestedTaskInfo}>
+                                            {task.time && task.duration && getEndTime(task.time, task.duration) && (
+                                                <Text style={[styles.suggestedTaskTime, { color: colors.subtext }]}>
+                                                    {task.time} - {getEndTime(task.time, task.duration)} ({task.duration}m)
+                                                </Text>
+                                            )}
+                                            <Text style={[styles.suggestedTaskTitle, { color: colors.text }]}>
+                                                {task.title}
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+                            </>
+                        )}
+
+                        <View style={{ height: 120 }} />
+                    </ScrollView>
+
+                    {/* Continue Button */}
+                    <View style={[styles.newTaskFooter, { backgroundColor: colors.background }]}>
+                        <TouchableOpacity
+                            style={[styles.newTaskContinueBtn, { backgroundColor: colors.primary }]}
+                            onPress={handleAddTask}
+                        >
+                            <Text style={styles.newTaskContinueText}>Continue</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </Modal>
 
@@ -721,11 +756,278 @@ export default function Home() {
                                         <Text style={{ color: colors.subtext, fontSize: 15, paddingLeft: 28 }}>
                                             {selectedTask.duration} minutes
                                         </Text>
+                                        <Text style={{ color: colors.primary, fontSize: 14, paddingLeft: 28, marginTop: 4, fontWeight: '500' }}>
+                                            {selectedTask.time} - {getEndTime(selectedTask.time, selectedTask.duration)}
+                                        </Text>
                                     </View>
                                 )}
                             </ScrollView>
                         )}
                     </View>
+                </View>
+            </Modal>
+
+            {/* Manage Habits Modal */}
+            <Modal visible={showManageHabits} animationType="slide" transparent onRequestClose={() => setShowManageHabits(false)}>
+                <View style={[styles.manageHabitsModal, { backgroundColor: colors.background }]}>
+                    <View style={styles.manageHabitsHeader}>
+                        <TouchableOpacity onPress={() => setShowManageHabits(false)}>
+                            <Ionicons name="close" size={28} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={[styles.manageHabitsModalTitle, { color: colors.text }]}>Manage Habits</Text>
+                        <View style={{ width: 28 }} />
+                    </View>
+
+                    {!showAddHabitForm ? (
+                        <ScrollView style={styles.habitsListContainer} showsVerticalScrollIndicator={false}>
+                            {allHabits.length === 0 ? (
+                                <View style={styles.emptyHabitsContainer}>
+                                    <Ionicons name="star-outline" size={64} color={colors.subtext} style={{ opacity: 0.5 }} />
+                                    <Text style={[styles.emptyHabitsText, { color: colors.subtext }]}>No habits yet</Text>
+                                    <Text style={[styles.emptyHabitsSubtext, { color: colors.subtext }]}>Tap the + button to create your first habit</Text>
+                                </View>
+                            ) : (
+                                allHabits.map((habit) => (
+                                    <GlassView key={habit.id} style={[styles.habitListItem, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}>
+                                        <View style={[styles.habitListIcon, { backgroundColor: colors.primary + '20' }]}>
+                                            <Ionicons name={habit.icon || 'star'} size={24} color={colors.primary} />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.habitListTitle, { color: colors.text }]}>{habit.title}</Text>
+                                            {habit.time && (
+                                                <Text style={[styles.habitListTime, { color: colors.subtext }]}>
+                                                    <Ionicons name="time-outline" size={12} color={colors.subtext} /> {habit.time}
+                                                </Text>
+                                            )}
+                                            {habit.frequency && (
+                                                <Text style={[styles.habitListFrequency, { color: colors.subtext }]}>{habit.frequency}</Text>
+                                            )}
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() => handleDeleteHabit(habit.id)}
+                                            style={[styles.habitDeleteBtn, { backgroundColor: colors.danger + '20' }]}
+                                        >
+                                            <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                                        </TouchableOpacity>
+                                    </GlassView>
+                                ))
+                            )}
+                            <View style={{ height: 150 }} />
+                        </ScrollView>
+                    ) : (
+                        <ScrollView style={styles.addHabitForm} showsVerticalScrollIndicator={false}>
+                            <Text style={[styles.habitFormLabel, { color: colors.subtext }]}>NAME</Text>
+                            <GlassView style={styles.habitInputContainer}>
+                                <TextInput
+                                    style={[styles.habitInput, { color: colors.text }]}
+                                    placeholder="e.g., Morning Walk"
+                                    placeholderTextColor={colors.subtext}
+                                    value={habitTitle}
+                                    onChangeText={setHabitTitle}
+                                    autoFocus
+                                />
+                            </GlassView>
+
+                            <Text style={[styles.habitFormLabel, { color: colors.subtext }]}>TIME</Text>
+                            <TouchableOpacity onPress={() => setShowHabitTimePicker(true)}>
+                                <GlassView style={styles.habitInputContainer}>
+                                    <View style={styles.habitTimeRow}>
+                                        <Ionicons name="time-outline" size={20} color={colors.primary} />
+                                        <Text style={[styles.habitInput, {
+                                            color: habitTime ? colors.text : colors.subtext,
+                                            flex: 1,
+                                            marginLeft: 8
+                                        }]}>
+                                            {habitTime || 'Select time'}
+                                        </Text>
+                                        <Ionicons name="chevron-down" size={20} color={colors.subtext} />
+                                    </View>
+                                </GlassView>
+                            </TouchableOpacity>
+
+                            <Text style={[styles.habitFormLabel, { color: colors.subtext }]}>ICON</Text>
+                            <View style={styles.habitIconGrid}>
+                                {['fitness', 'water', 'book', 'moon', 'sunny', 'bicycle', 'walk', 'nutrition', 'medkit', 'leaf'].map(icon => (
+                                    <TouchableOpacity key={icon} onPress={() => setHabitIcon(icon)}>
+                                        <GlassView
+                                            style={[
+                                                styles.habitIconOption,
+                                                habitIcon === icon && { borderColor: colors.primary, backgroundColor: colors.glass }
+                                            ]}
+                                        >
+                                            <Ionicons
+                                                name={icon}
+                                                size={24}
+                                                color={habitIcon === icon ? colors.primary : colors.subtext}
+                                            />
+                                        </GlassView>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            <Text style={[styles.habitFormLabel, { color: colors.subtext }]}>FREQUENCY</Text>
+                            <View style={styles.habitFreqRow}>
+                                {['Daily', 'Weekly', 'Monthly'].map(freq => (
+                                    <TouchableOpacity key={freq} onPress={() => setHabitFrequency(freq)} style={{ flex: 1 }}>
+                                        <GlassView
+                                            style={[
+                                                styles.habitFreqButton,
+                                                habitFrequency === freq && { backgroundColor: colors.primary }
+                                            ]}
+                                        >
+                                            <Text style={[
+                                                styles.habitFreqText,
+                                                { color: habitFrequency === freq ? '#ffffff' : colors.subtext }
+                                            ]}>
+                                                {freq}
+                                            </Text>
+                                        </GlassView>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            <View style={{ height: 150 }} />
+                        </ScrollView>
+                    )}
+
+                    {/* Bottom Buttons */}
+                    <View style={[styles.manageHabitsFooter, { backgroundColor: colors.background, borderTopColor: colors.glassBorder }]}>
+                        {!showAddHabitForm ? (
+                            <TouchableOpacity
+                                style={[styles.addHabitFab, { backgroundColor: colors.primary }]}
+                                onPress={() => setShowAddHabitForm(true)}
+                            >
+                                <Ionicons name="add" size={28} color="#FFFFFF" />
+                                <Text style={styles.addHabitFabText}>Add New Habit</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <View style={styles.formFooterButtons}>
+                                <TouchableOpacity
+                                    style={[styles.formCancelBtn, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}
+                                    onPress={() => {
+                                        setShowAddHabitForm(false);
+                                        setHabitTitle('');
+                                        setHabitTime('');
+                                        setHabitIcon('fitness');
+                                        setHabitFrequency('Daily');
+                                    }}
+                                >
+                                    <Text style={[styles.formCancelText, { color: colors.text }]}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.formSaveBtn, { backgroundColor: colors.primary, opacity: habitTitle.trim() ? 1 : 0.5 }]}
+                                    onPress={handleSaveHabit}
+                                    disabled={!habitTitle.trim()}
+                                >
+                                    <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                                    <Text style={styles.formSaveText}>Save Habit</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Habit Time Picker Modal */}
+                    <Modal visible={showHabitTimePicker} animationType="slide" transparent>
+                        <View style={styles.modalOverlay}>
+                            <GlassView style={[styles.timePickerModal, { backgroundColor: colors.background }]}>
+                                <View style={styles.timePickerHeader}>
+                                    <Text style={[styles.timePickerTitle, { color: colors.text }]}>Select Time</Text>
+                                    <TouchableOpacity onPress={() => setShowHabitTimePicker(false)}>
+                                        <Ionicons name="close" size={24} color={colors.subtext} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.pickerContainer}>
+                                    <ScrollView
+                                        style={styles.picker}
+                                        showsVerticalScrollIndicator={false}
+                                        contentContainerStyle={styles.pickerContent}
+                                    >
+                                        {[...Array(12)].map((_, i) => {
+                                            const hour = i + 1;
+                                            return (
+                                                <TouchableOpacity
+                                                    key={hour}
+                                                    onPress={() => handleHabitHourSelect(hour)}
+                                                    style={styles.pickerItem}
+                                                >
+                                                    <Text style={[
+                                                        styles.pickerText,
+                                                        {
+                                                            color: habitHour === hour ? colors.primary : colors.subtext,
+                                                            fontSize: habitHour === hour ? 32 : 20,
+                                                            fontWeight: habitHour === hour ? '700' : '500',
+                                                        }
+                                                    ]}>
+                                                        {hour}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </ScrollView>
+
+                                    <Text style={[styles.separator, { color: colors.text }]}>:</Text>
+
+                                    <ScrollView
+                                        style={styles.picker}
+                                        showsVerticalScrollIndicator={false}
+                                        contentContainerStyle={styles.pickerContent}
+                                    >
+                                        {[...Array(60)].map((_, i) => (
+                                            <TouchableOpacity
+                                                key={i}
+                                                onPress={() => handleHabitMinuteSelect(i)}
+                                                style={styles.pickerItem}
+                                            >
+                                                <Text style={[
+                                                    styles.pickerText,
+                                                    {
+                                                        color: habitMinute === i ? colors.primary : colors.subtext,
+                                                        fontSize: habitMinute === i ? 32 : 20,
+                                                        fontWeight: habitMinute === i ? '700' : '500',
+                                                    }
+                                                ]}>
+                                                    {i.toString().padStart(2, '0')}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+
+                                    <ScrollView
+                                        style={styles.picker}
+                                        showsVerticalScrollIndicator={false}
+                                        contentContainerStyle={styles.pickerContent}
+                                    >
+                                        {['AM', 'PM'].map((period) => (
+                                            <TouchableOpacity
+                                                key={period}
+                                                onPress={() => handleHabitPeriodSelect(period)}
+                                                style={styles.pickerItem}
+                                            >
+                                                <Text style={[
+                                                    styles.pickerText,
+                                                    {
+                                                        color: habitPeriod === period ? colors.primary : colors.subtext,
+                                                        fontSize: habitPeriod === period ? 32 : 20,
+                                                        fontWeight: habitPeriod === period ? '700' : '500',
+                                                    }
+                                                ]}>
+                                                    {period}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+
+                                <TouchableOpacity
+                                    style={[styles.confirmButton, { backgroundColor: colors.primary }]}
+                                    onPress={handleHabitTimeConfirm}
+                                >
+                                    <Text style={styles.confirmButtonText}>Set Time</Text>
+                                </TouchableOpacity>
+                            </GlassView>
+                        </View>
+                    </Modal>
                 </View>
             </Modal>
         </View>
@@ -761,7 +1063,159 @@ const styles = StyleSheet.create({
     // Sections
     sectionTitle: { fontSize: 20, fontWeight: '700', marginBottom: 16, marginTop: 8 },
 
-    // Timeline
+    // Calendar Header
+    calendarHeader: {
+        marginBottom: 24,
+        paddingHorizontal: 4,
+    },
+    calendarMonth: {
+        fontSize: 22,
+        fontWeight: '700',
+        marginBottom: 16,
+    },
+    calendarWeek: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    calendarDayColumn: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    calendarDayLabel: {
+        fontSize: 11,
+        fontWeight: '600',
+        marginBottom: 8,
+        opacity: 0.7,
+    },
+    calendarDayNumber: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    calendarDayText: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    calendarDots: {
+        flexDirection: 'row',
+        gap: 4,
+    },
+    calendarDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
+
+    // Vertical Timeline
+    verticalTimelineContainer: {
+        padding: 16,
+        marginBottom: 24,
+    },
+    verticalTimelineItem: {
+        flexDirection: 'row',
+        marginBottom: 0,
+        minHeight: 100,
+    },
+    timelineTimeColumn: {
+        width: 65,
+        paddingTop: 8,
+        paddingRight: 8,
+    },
+    timelineTimeLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 2,
+    },
+    timelineEndTimeLabel: {
+        fontSize: 11,
+        fontWeight: '500',
+    },
+    timelineNodeColumn: {
+        width: 60,
+        alignItems: 'center',
+        position: 'relative',
+    },
+    verticalLine: {
+        width: 3,
+        flex: 1,
+        minHeight: 20,
+    },
+    timelineCircleNode: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        borderWidth: 3,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+    },
+    timelineTaskContent: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingLeft: 8,
+        paddingBottom: 16,
+    },
+    timelineTaskInner: {
+        flex: 1,
+    },
+    timelineTaskHeader: {
+        marginBottom: 6,
+    },
+    timelineTaskTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    timelineTaskTime: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    timelineTaskTitle: {
+        fontSize: 17,
+        fontWeight: '600',
+        marginBottom: 6,
+    },
+    timelineTaskNotes: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 6,
+    },
+    timelineTaskNotesText: {
+        fontSize: 13,
+        flex: 1,
+    },
+    overlapWarning: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+    },
+    overlapWarningText: {
+        fontSize: 11,
+        color: '#9CA3AF',
+    },
+    timelineCheckCircle: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        borderWidth: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 12,
+        marginTop: 8,
+    },
+    timelineCheckFill: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+    },
+
+    // Timeline (old styles for compatibility)
     timelineContainer: { padding: 16, marginBottom: 24 },
     taskCard: { flexDirection: 'row', alignItems: 'center', padding: 16, marginBottom: 12, borderLeftWidth: 4, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.05)' },
     taskTime: { marginRight: 16 },
@@ -838,6 +1292,133 @@ const styles = StyleSheet.create({
     fabIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#4F46E5', justifyContent: 'center', alignItems: 'center' },
     closeButton: { padding: 4 },
     inputContainer: { marginBottom: 16, borderRadius: 16, overflow: 'hidden' },
+
+    // New Task Modal Styles
+    newTaskModalOverlay: {
+        flex: 1,
+        paddingTop: 50,
+    },
+    newTaskHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    newTaskCloseBtn: {
+        marginRight: 16,
+    },
+    newTaskHeaderTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    newTaskBody: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 24,
+    },
+    newTaskLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 16,
+        marginTop: 8,
+    },
+    newTaskInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    newTaskInputIcon: {
+        marginRight: 12,
+    },
+    newTaskInput: {
+        flex: 1,
+        fontSize: 18,
+        paddingVertical: 12,
+        borderBottomWidth: 2,
+    },
+    newTaskTimeCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        marginBottom: 8,
+    },
+    newTaskTimeInfo: {
+        flex: 1,
+        marginLeft: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    newTaskTimeText: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    newTaskDurationText: {
+        fontSize: 14,
+    },
+    newTaskDurationInput: {
+        flex: 1,
+        marginLeft: 12,
+        fontSize: 16,
+    },
+    newTaskSectionLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: 24,
+        marginBottom: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    suggestedTaskCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        marginBottom: 10,
+    },
+    suggestedTaskIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    suggestedTaskInfo: {
+        flex: 1,
+    },
+    suggestedTaskTime: {
+        fontSize: 12,
+        marginBottom: 4,
+    },
+    suggestedTaskTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    newTaskFooter: {
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        paddingBottom: 32,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    newTaskContinueBtn: {
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    newTaskContinueText: {
+        color: '#FFFFFF',
+        fontSize: 17,
+        fontWeight: '600',
+    },
+
     timeDisplayRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: 'rgba(255,255,255,0.05)' },
     textArea: { height: 100, textAlignVertical: 'top' },
 
@@ -873,4 +1454,218 @@ const styles = StyleSheet.create({
     deleteAction: { backgroundColor: '#EF4444', justifyContent: 'center', alignItems: 'center', width: 80, height: '100%' },
     deleteText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', marginTop: 4 },
     taskNotes: { fontSize: 14, marginTop: 4 },
+
+    // Manage Habits Button
+    manageHabitsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginTop: 16,
+        marginHorizontal: 16,
+    },
+    manageHabitsIconContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    manageHabitsTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 4,
+    },
+    manageHabitsSubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+
+    // Manage Habits Modal
+    manageHabitsModal: {
+        flex: 1,
+        paddingTop: 50,
+    },
+    manageHabitsHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    manageHabitsModalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    habitsListContainer: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 20,
+    },
+    emptyHabitsContainer: {
+        alignItems: 'center',
+        paddingVertical: 100,
+    },
+    emptyHabitsText: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginTop: 20,
+    },
+    emptyHabitsSubtext: {
+        fontSize: 14,
+        marginTop: 8,
+        textAlign: 'center',
+        paddingHorizontal: 40,
+    },
+    habitListItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginBottom: 12,
+    },
+    habitListIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    habitListTitle: {
+        fontSize: 17,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    habitListTime: {
+        fontSize: 13,
+        marginBottom: 2,
+    },
+    habitListFrequency: {
+        fontSize: 12,
+    },
+    habitDeleteBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    addHabitForm: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 20,
+    },
+    habitFormLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 8,
+        marginTop: 20,
+    },
+    habitInputContainer: {
+        padding: 16,
+    },
+    habitInput: {
+        fontSize: 18,
+    },
+    habitTimeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    habitIconGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    habitIconOption: {
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+    habitFreqRow: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    habitFreqButton: {
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 12,
+    },
+    habitFreqText: {
+        fontWeight: '600',
+    },
+    manageHabitsFooter: {
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        paddingBottom: 30,
+        borderTopWidth: 1,
+    },
+    addHabitFab: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 18,
+        borderRadius: 16,
+        gap: 10,
+    },
+    addHabitFabText: {
+        color: '#FFFFFF',
+        fontSize: 17,
+        fontWeight: '700',
+    },
+    formFooterButtons: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    formCancelBtn: {
+        flex: 1,
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    formCancelText: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    formSaveBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: 16,
+        gap: 8,
+    },
+    formSaveText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+
+    // FAB Button
+    fab: {
+        position: 'absolute',
+        bottom: 100,
+        right: 20,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
 });
