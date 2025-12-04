@@ -326,32 +326,6 @@ export default function Home() {
                     ))}
                 </GlassView>
 
-                {/* Today Summary */}
-                {stats && (
-                    <GlassView style={styles.summaryCard}>
-                        <Text style={[styles.summaryTitle, { color: colors.text }]}>Today's Summary</Text>
-                        <View style={styles.summaryRow}>
-                            <View style={styles.summaryItem}>
-                                <Text style={[styles.summaryValue, { color: colors.primary }]}>
-                                    {tasks.filter(t => t.completed).length}/{tasks.length}
-                                </Text>
-                                <Text style={[styles.summaryLabel, { color: colors.subtext }]}>Tasks</Text>
-                            </View>
-                            <View style={styles.summaryItem}>
-                                <Text style={[styles.summaryValue, { color: colors.accent }]}>
-                                    {stats.completedToday}/{stats.totalHabits}
-                                </Text>
-                                <Text style={[styles.summaryLabel, { color: colors.subtext }]}>Habits</Text>
-                            </View>
-                            <View style={styles.summaryItem}>
-                                <Text style={[styles.summaryValue, { color: colors.secondary }]}>
-                                    {Math.round((waterToday / waterGoal) * 100)}%
-                                </Text>
-                                <Text style={[styles.summaryLabel, { color: colors.subtext }]}>Water</Text>
-                            </View>
-                        </View>
-                    </GlassView>
-                )}
 
                 <View style={{ height: 100 }} />
             </ScrollView>
