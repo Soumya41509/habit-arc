@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import { useTheme } from '../../context/ThemeContext';
-import { getTodayTasks, updateTask, deleteTask, saveTask } from '../../lib/storage';
+import { getTodayTasks, updateTask, deleteTask, saveTask, getTasks } from '../../lib/storage';
 import GlassView from '../../components/GlassView';
 
 export default function Timeline() {
@@ -28,20 +28,41 @@ export default function Timeline() {
     const [selectedDate, setSelectedDate] = useState(new Date());
 
 
-    const loadData = async () => {
-        const todayTasks = await getTodayTasks();
-        setTasks(todayTasks.sort((a, b) => a.time.localeCompare(b.time)));
+    const loadData = async (date = new Date()) => {
+        // Load tasks for the specific date
+        const allTasks = await getTasks();
+        const dateKey = date.toISOString().split('T')[0];
+        const dateTasks = allTasks[dateKey] || [];
+        setTasks(dateTasks.sort((a, b) => a.time.localeCompare(b.time)));
+    };
+
+    const getTaskCountForDate = (date) => {
+        // This checks if any tasks exist for the given date
+        // Since we only have today's tasks loaded, we can only show dots for today
+        // In a real app, you'd load all tasks and filter by date
+        const dateStr = date.toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (dateStr === todayStr) {
+            return tasks.length;
+        }
+        return 0;
     };
 
     useFocusEffect(
         useCallback(() => {
-            loadData();
-        }, [])
+            loadData(selectedDate);
+        }, [selectedDate])
     );
+
+    // Reload when date changes
+    React.useEffect(() => {
+        loadData(selectedDate);
+    }, [selectedDate]);
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadData();
+        await loadData(selectedDate);
         setRefreshing(false);
     };
 
@@ -145,30 +166,68 @@ export default function Timeline() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.largeCalendarWeek}>
-                        {['Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'].map((day, idx) => (
-                            <View key={idx} style={styles.largeCalendarDay}>
-                                <Text style={[styles.largeCalendarDayLabel, { color: colors.subtext }]}>{day}</Text>
-                                <View style={[
-                                    styles.largeCalendarDayCircle,
-                                    idx === 1 && { backgroundColor: '#FFFFFF' }
-                                ]}>
-                                    <Text style={[
-                                        styles.largeCalendarDayNumber,
-                                        { color: idx === 1 ? '#000000' : colors.text }
-                                    ]}>
-                                        {idx + 2}
-                                    </Text>
-                                </View>
-                                <View style={styles.largeCalendarDots}>
-                                    <View style={[styles.largeCalendarDot, { backgroundColor: '#EF4444' }]} />
-                                    <View style={[styles.largeCalendarDot, { backgroundColor: '#3B82F6' }]} />
-                                    {idx % 2 === 0 && <View style={[styles.largeCalendarDot, { backgroundColor: '#F59E0B' }]} />}
-                                    {idx === 2 && <View style={[styles.largeCalendarDot, { backgroundColor: '#10B981' }]} />}
-                                </View>
-                            </View>
-                        ))}
-                    </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.largeCalendarWeek}
+                        contentContainerStyle={styles.largeCalendarWeekContent}
+                    >
+                        {(() => {
+                            const dates = [];
+                            // Generate 7 days centered on selectedDate (or starting from it, let's center it for better UX)
+                            // Actually, usually calendar strips show the current week. 
+                            // Let's show 3 days before and 3 days after selected date for context.
+                            for (let i = -3; i <= 3; i++) {
+                                const d = new Date(selectedDate);
+                                d.setDate(selectedDate.getDate() + i);
+                                dates.push(d);
+                            }
+
+                            return dates.map((date, idx) => {
+                                const isToday = date.getDate() === new Date().getDate() &&
+                                    date.getMonth() === new Date().getMonth() &&
+                                    date.getFullYear() === new Date().getFullYear();
+
+                                const isSelected = date.getDate() === selectedDate.getDate() &&
+                                    date.getMonth() === selectedDate.getMonth() &&
+                                    date.getFullYear() === selectedDate.getFullYear();
+
+                                return (
+                                    <TouchableOpacity
+                                        key={idx}
+                                        style={styles.largeCalendarDay}
+                                        onPress={() => setSelectedDate(date)}
+                                    >
+                                        <Text style={[styles.largeCalendarDayLabel, { color: colors.subtext }]}>
+                                            {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                        </Text>
+                                        <View style={[
+                                            styles.largeCalendarDayCircle,
+                                            isToday && { backgroundColor: colors.primary },
+                                            (isSelected && !isToday) && { backgroundColor: '#FFFFFF' }
+                                        ]}>
+                                            <Text style={[
+                                                styles.largeCalendarDayNumber,
+                                                {
+                                                    color: isToday ? '#FFFFFF' :
+                                                        (isSelected ? '#000000' : colors.text),
+                                                    fontWeight: (isToday || isSelected) ? 'bold' : 'normal'
+                                                }
+                                            ]}>
+                                                {date.getDate()}
+                                            </Text>
+                                        </View>
+                                        {/* Task indicators - only show if date has tasks */}
+                                        <View style={styles.largeCalendarDots}>
+                                            {getTaskCountForDate(date) > 0 && (
+                                                <View style={[styles.largeCalendarDot, { backgroundColor: colors.primary }]} />
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            });
+                        })()}
+                    </ScrollView>
                 </View>
 
                 {/* Vertical Timeline */}
@@ -555,8 +614,14 @@ export default function Timeline() {
                                             key={day}
                                             style={[
                                                 styles.datePickerDayCell,
-                                                isToday && { backgroundColor: '#1F2937' },
-                                                isSelected && { backgroundColor: colors.primary }
+                                                // Today gets Badge Color (Primary)
+                                                isToday && { backgroundColor: colors.primary },
+                                                // Selected date (if not today) gets White Circle
+                                                (isSelected && !isToday) && { backgroundColor: '#FFFFFF' },
+                                                // If Today is selected, keep it Primary but maybe add a border or distinct style if needed, 
+                                                // but user asked for "badge color" for today. 
+                                                // If we want to strictly follow "click on other date it will be white circle", 
+                                                // then selected other date is white.
                                             ]}
                                             onPress={() => {
                                                 const newDate = new Date(year, month, day);
@@ -566,7 +631,9 @@ export default function Timeline() {
                                         >
                                             <Text style={[
                                                 styles.datePickerDayText,
-                                                { color: (isSelected || isToday) ? '#FFFFFF' : colors.text }
+                                                // Text color logic
+                                                isToday ? { color: '#FFFFFF', fontWeight: 'bold' } :
+                                                    (isSelected ? { color: '#000000', fontWeight: 'bold' } : { color: colors.text })
                                             ]}>
                                                 {day}
                                             </Text>
@@ -625,12 +692,16 @@ const styles = StyleSheet.create({
     },
     largeCalendarWeek: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         gap: 6,
     },
+    largeCalendarWeekContent: {
+        flexDirection: 'row',
+        gap: 16,
+        paddingHorizontal: 4,
+    },
     largeCalendarDay: {
-        flex: 1,
         alignItems: 'center',
+        minWidth: 60,
     },
     largeCalendarDayLabel: {
         fontSize: 12,
