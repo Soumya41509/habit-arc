@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,17 +9,50 @@ import {
     getWaterLogs, logWater, getWaterGoal,
     getSleepSessions, startSleep, endSleep,
     getFastingSessions, startFasting, endFasting,
-    getMoodEntries, saveMoodEntry
+    getMoodEntries, saveMoodEntry,
+    getLocalDate
 } from '../../lib/storage';
 
 export default function Wellness() {
     const { colors } = useTheme();
     const [waterToday, setWaterToday] = useState(0);
-    const [waterGoal, setWaterGoal] = useState(2000);
+    const [waterGoal, setWaterGoal] = useState(3000);
     const [sleepSession, setSleepSession] = useState(null);
     const [fastingSession, setFastingSession] = useState(null);
     const [moodToday, setMoodToday] = useState(null);
     const [moodNote, setMoodNote] = useState('');
+    const [elapsedSleep, setElapsedSleep] = useState('00:00:00');
+    const [elapsedFasting, setElapsedFasting] = useState('00:00:00');
+
+    // Timer Logic
+    useEffect(() => {
+        let interval;
+        if (sleepSession || fastingSession) {
+            interval = setInterval(() => {
+                const now = new Date();
+
+                if (sleepSession) {
+                    const start = new Date(sleepSession.startTime);
+                    const diff = now - start;
+                    setElapsedSleep(formatDuration(diff));
+                }
+
+                if (fastingSession) {
+                    const start = new Date(fastingSession.startTime);
+                    const diff = now - start;
+                    setElapsedFasting(formatDuration(diff));
+                }
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [sleepSession, fastingSession]);
+
+    const formatDuration = (ms) => {
+        const seconds = Math.floor((ms / 1000) % 60);
+        const minutes = Math.floor((ms / (1000 * 60)) % 60);
+        const hours = Math.floor((ms / (1000 * 60 * 60)));
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -30,7 +63,7 @@ export default function Wellness() {
     const loadData = async () => {
         // Water
         const waterLogs = await getWaterLogs();
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDate();
         const todayWater = waterLogs[today] || [];
         const total = todayWater.reduce((sum, log) => sum + log.amount, 0);
         setWaterToday(total);
@@ -59,7 +92,7 @@ export default function Wellness() {
 
     const addWater = async (amount) => {
         await logWater(amount);
-        setWaterToday(waterToday + amount);
+        setWaterToday(prev => prev + amount);
     };
 
     const handleSleepToggle = async () => {
@@ -89,7 +122,12 @@ export default function Wellness() {
         setMoodToday(mood);
     };
 
-    const waterProgress = waterToday / waterGoal;
+    // Calculate progress: if over 3000ml, show overflow progress
+    const waterProgress = waterToday <= waterGoal
+        ? waterToday / waterGoal
+        : Math.min((waterToday - waterGoal) / waterGoal, 1);
+
+    const isOverLimit = waterToday > waterGoal;
 
     const moods = ['😊', '😐', '😢', '😡', '😴', '🤩', '😌', '😰'];
 
@@ -106,7 +144,11 @@ export default function Wellness() {
                     </View>
 
                     <View style={styles.waterContainer}>
-                        <ArcProgress size={120} progress={waterProgress}>
+                        <ArcProgress
+                            size={120}
+                            progress={waterProgress}
+                            customColor={isOverLimit ? colors.danger : null}
+                        >
                             <View style={styles.arcContent}>
                                 <Text style={[styles.waterAmount, { color: colors.text }]}>
                                     {waterToday}
@@ -119,7 +161,7 @@ export default function Wellness() {
                             <TouchableOpacity
                                 onPress={() => {
                                     if (waterToday >= 300) {
-                                        setWaterToday(waterToday - 300);
+                                        addWater(-300);
                                     }
                                 }}
                                 style={[styles.waterBtn, { backgroundColor: colors.danger + '20' }]}
@@ -164,8 +206,8 @@ export default function Wellness() {
                     </TouchableOpacity>
 
                     {sleepSession && (
-                        <Text style={[styles.statusText, { color: colors.subtext }]}>
-                            Started at {new Date(sleepSession.startTime).toLocaleTimeString()}
+                        <Text style={[styles.statusText, { color: colors.primary, fontSize: 24, fontWeight: '700' }]}>
+                            {elapsedSleep}
                         </Text>
                     )}
                 </GlassView>
@@ -192,8 +234,8 @@ export default function Wellness() {
                     </TouchableOpacity>
 
                     {fastingSession && (
-                        <Text style={[styles.statusText, { color: colors.subtext }]}>
-                            Target: 16 hours
+                        <Text style={[styles.statusText, { color: colors.primary, fontSize: 24, fontWeight: '700' }]}>
+                            {elapsedFasting}
                         </Text>
                     )}
                 </GlassView>

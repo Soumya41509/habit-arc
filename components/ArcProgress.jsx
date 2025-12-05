@@ -7,6 +7,7 @@ export default function ArcProgress({
     size = 200,
     strokeWidth = 15,
     progress = 0.5,
+    customColor = null,
     children
 }) {
     const { colors } = useTheme();
@@ -14,13 +15,16 @@ export default function ArcProgress({
     const circumference = radius * 2 * Math.PI;
     const strokeDashoffset = circumference - (progress * circumference);
 
+    const gradientColor1 = customColor || colors.primary;
+    const gradientColor2 = customColor || colors.secondary;
+
     return (
         <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
             <Svg width={size} height={size} style={{ position: 'absolute' }}>
                 <Defs>
                     <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                        <Stop offset="0" stopColor={colors.primary} stopOpacity="1" />
-                        <Stop offset="1" stopColor={colors.secondary} stopOpacity="1" />
+                        <Stop offset="0" stopColor={gradientColor1} stopOpacity="1" />
+                        <Stop offset="1" stopColor={gradientColor2} stopOpacity="1" />
                     </LinearGradient>
                 </Defs>
                 {/* Background Circle */}

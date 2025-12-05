@@ -231,23 +231,10 @@ export default function Home() {
     };
 
     const handleDeleteHabit = async (habitId) => {
-        Alert.alert(
-            'Delete Habit',
-            'Are you sure you want to delete this habit?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                        await deleteHabit(habitId);
-                        const loadedHabits = await getHabits();
-                        setAllHabits(loadedHabits);
-                        await loadData();
-                    }
-                }
-            ]
-        );
+        await deleteHabit(habitId);
+        const loadedHabits = await getHabits();
+        setAllHabits(loadedHabits);
+        await loadData();
     };
 
     const handleHabitTimeConfirm = () => {
@@ -795,27 +782,33 @@ export default function Home() {
                                 </View>
                             ) : (
                                 allHabits.map((habit) => (
-                                    <GlassView key={habit.id} style={[styles.habitListItem, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}>
-                                        <View style={[styles.habitListIcon, { backgroundColor: colors.primary + '20' }]}>
-                                            <Ionicons name={habit.icon || 'star'} size={24} color={colors.primary} />
+                                    <GlassView key={habit.id} style={[styles.habitListItem, { backgroundColor: colors.glass, borderColor: colors.glassBorder, alignItems: 'flex-start' }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                            <View style={{ alignItems: 'flex-start', maxWidth: '70%' }}>
+                                                <View style={[styles.habitListIcon, { backgroundColor: colors.primary + '20', marginRight: 0, marginBottom: 12 }]}>
+                                                    <Ionicons name={habit.icon || 'star'} size={24} color={colors.primary} />
+                                                </View>
+
+                                                <Text style={[styles.habitListTitle, { color: colors.text, marginBottom: 4 }]}>{habit.title}</Text>
+                                                {habit.time && (
+                                                    <Text style={[styles.habitListTime, { color: colors.subtext, marginBottom: 2 }]}>
+                                                        <Ionicons name="time-outline" size={12} color={colors.subtext} /> {habit.time}
+                                                    </Text>
+                                                )}
+                                                {habit.frequency && (
+                                                    <Text style={[styles.habitListFrequency, { color: colors.subtext }]}>{habit.frequency}</Text>
+                                                )}
+                                            </View>
+
+                                            <View style={{ flex: 1 }} />
+
+                                            <TouchableOpacity
+                                                onPress={() => handleDeleteHabit(habit.id)}
+                                                style={[styles.habitDeleteBtn, { backgroundColor: colors.danger + '20', marginTop: 4 }]}
+                                            >
+                                                <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                                            </TouchableOpacity>
                                         </View>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={[styles.habitListTitle, { color: colors.text }]}>{habit.title}</Text>
-                                            {habit.time && (
-                                                <Text style={[styles.habitListTime, { color: colors.subtext }]}>
-                                                    <Ionicons name="time-outline" size={12} color={colors.subtext} /> {habit.time}
-                                                </Text>
-                                            )}
-                                            {habit.frequency && (
-                                                <Text style={[styles.habitListFrequency, { color: colors.subtext }]}>{habit.frequency}</Text>
-                                            )}
-                                        </View>
-                                        <TouchableOpacity
-                                            onPress={() => handleDeleteHabit(habit.id)}
-                                            style={[styles.habitDeleteBtn, { backgroundColor: colors.danger + '20' }]}
-                                        >
-                                            <Ionicons name="trash-outline" size={20} color={colors.danger} />
-                                        </TouchableOpacity>
                                     </GlassView>
                                 ))
                             )}
@@ -944,11 +937,11 @@ export default function Home() {
                                     </TouchableOpacity>
                                 </View>
 
-                                <View style={styles.pickerContainer}>
+                                <View style={{ flexDirection: 'row', height: 200, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                                     <ScrollView
-                                        style={styles.picker}
+                                        style={{ flex: 1, maxHeight: 200 }}
                                         showsVerticalScrollIndicator={false}
-                                        contentContainerStyle={styles.pickerContent}
+                                        contentContainerStyle={{ paddingVertical: 80 }}
                                     >
                                         {[...Array(12)].map((_, i) => {
                                             const hour = i + 1;
@@ -956,16 +949,13 @@ export default function Home() {
                                                 <TouchableOpacity
                                                     key={hour}
                                                     onPress={() => handleHabitHourSelect(hour)}
-                                                    style={styles.pickerItem}
+                                                    style={{ padding: 8, alignItems: 'center' }}
                                                 >
-                                                    <Text style={[
-                                                        styles.pickerText,
-                                                        {
-                                                            color: habitHour === hour ? colors.primary : colors.subtext,
-                                                            fontSize: habitHour === hour ? 32 : 20,
-                                                            fontWeight: habitHour === hour ? '700' : '500',
-                                                        }
-                                                    ]}>
+                                                    <Text style={{
+                                                        color: habitHour === hour ? colors.primary : colors.subtext,
+                                                        fontSize: habitHour === hour ? 32 : 20,
+                                                        fontWeight: habitHour === hour ? '700' : '500',
+                                                    }}>
                                                         {hour}
                                                     </Text>
                                                 </TouchableOpacity>
@@ -973,27 +963,24 @@ export default function Home() {
                                         })}
                                     </ScrollView>
 
-                                    <Text style={[styles.separator, { color: colors.text }]}>:</Text>
+                                    <Text style={{ color: colors.text, fontSize: 32, fontWeight: '700' }}>:</Text>
 
                                     <ScrollView
-                                        style={styles.picker}
+                                        style={{ flex: 1, maxHeight: 200 }}
                                         showsVerticalScrollIndicator={false}
-                                        contentContainerStyle={styles.pickerContent}
+                                        contentContainerStyle={{ paddingVertical: 80 }}
                                     >
                                         {[...Array(60)].map((_, i) => (
                                             <TouchableOpacity
                                                 key={i}
                                                 onPress={() => handleHabitMinuteSelect(i)}
-                                                style={styles.pickerItem}
+                                                style={{ padding: 8, alignItems: 'center' }}
                                             >
-                                                <Text style={[
-                                                    styles.pickerText,
-                                                    {
-                                                        color: habitMinute === i ? colors.primary : colors.subtext,
-                                                        fontSize: habitMinute === i ? 32 : 20,
-                                                        fontWeight: habitMinute === i ? '700' : '500',
-                                                    }
-                                                ]}>
+                                                <Text style={{
+                                                    color: habitMinute === i ? colors.primary : colors.subtext,
+                                                    fontSize: habitMinute === i ? 32 : 20,
+                                                    fontWeight: habitMinute === i ? '700' : '500',
+                                                }}>
                                                     {i.toString().padStart(2, '0')}
                                                 </Text>
                                             </TouchableOpacity>
@@ -1001,24 +988,21 @@ export default function Home() {
                                     </ScrollView>
 
                                     <ScrollView
-                                        style={styles.picker}
+                                        style={{ flex: 1, maxHeight: 200 }}
                                         showsVerticalScrollIndicator={false}
-                                        contentContainerStyle={styles.pickerContent}
+                                        contentContainerStyle={{ paddingVertical: 80 }}
                                     >
                                         {['AM', 'PM'].map((period) => (
                                             <TouchableOpacity
                                                 key={period}
                                                 onPress={() => handleHabitPeriodSelect(period)}
-                                                style={styles.pickerItem}
+                                                style={{ padding: 8, alignItems: 'center' }}
                                             >
-                                                <Text style={[
-                                                    styles.pickerText,
-                                                    {
-                                                        color: habitPeriod === period ? colors.primary : colors.subtext,
-                                                        fontSize: habitPeriod === period ? 32 : 20,
-                                                        fontWeight: habitPeriod === period ? '700' : '500',
-                                                    }
-                                                ]}>
+                                                <Text style={{
+                                                    color: habitPeriod === period ? colors.primary : colors.subtext,
+                                                    fontSize: habitPeriod === period ? 32 : 20,
+                                                    fontWeight: habitPeriod === period ? '700' : '500',
+                                                }}>
                                                     {period}
                                                 </Text>
                                             </TouchableOpacity>
