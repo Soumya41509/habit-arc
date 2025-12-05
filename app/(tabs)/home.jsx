@@ -362,7 +362,12 @@ export default function Home() {
                 </View>
 
                 {/* HabitArc Panel */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>HabitArc</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 8 }}>
+                    <Text style={[styles.sectionTitle, { marginBottom: 0, marginTop: 0, color: colors.text }]}>HabitArc</Text>
+                    <TouchableOpacity onPress={handleOpenManageHabits}>
+                        <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>Manage</Text>
+                    </TouchableOpacity>
+                </View>
                 <GlassView style={styles.habitPanel}>
                     <View style={styles.habitArc}>
                         <ArcProgress size={140} progress={progress}>
@@ -378,6 +383,8 @@ export default function Home() {
                         <TouchableOpacity
                             key={habit.id}
                             onPress={() => toggleHabit(habit.id)}
+                            onLongPress={() => handleDeleteHabit(habit.id)}
+                            delayLongPress={500}
                             style={styles.miniHabitCard}
                         >
                             <View style={[styles.habitIcon, { backgroundColor: colors.primary + '20' }]}>
