@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -125,6 +125,17 @@ export default function Timeline() {
     const handleAddTask = async () => {
         if (!newTaskTitle.trim() || !newTaskTime) return;
 
+        // Check for time conflict
+        const existingTaskAtTime = tasks.find(task => task.time === newTaskTime);
+        if (existingTaskAtTime) {
+            Alert.alert(
+                'Time Conflict',
+                `A task "${existingTaskAtTime.title}" is already scheduled at ${newTaskTime}. Please choose a different time.`,
+                [{ text: 'OK' }]
+            );
+            return;
+        }
+
         const newTask = {
             title: newTaskTitle.trim(),
             time: newTaskTime,
@@ -132,10 +143,11 @@ export default function Timeline() {
             notes: newTaskNotes.trim() || null,
             priority: 'medium',
             completed: false,
+            date: selectedDate.toISOString().split('T')[0], // Save to selected date
         };
 
         await saveTask(newTask);
-        await loadData();
+        await loadData(selectedDate); // Reload selected date's tasks
 
         // Reset form
         setNewTaskTitle('');
@@ -494,47 +506,124 @@ export default function Timeline() {
                 <View style={styles.timePickerOverlay}>
                     <View style={[styles.timePickerCard, { backgroundColor: colors.background }]}>
                         <Text style={[styles.timePickerTitle, { color: colors.text }]}>Select Time</Text>
+
                         <View style={styles.timePickerRow}>
-                            <Picker
-                                selectedValue={selectedHour}
-                                onValueChange={setSelectedHour}
-                                style={[styles.picker, { color: colors.text }]}
-                            >
-                                {[...Array(12)].map((_, i) => (
-                                    <Picker.Item key={i} label={`${i + 1}`} value={i + 1} />
-                                ))}
-                            </Picker>
+                            {/* Hour Picker */}
+                            <View style={styles.scrollPickerColumn}>
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
+                                    snapToInterval={50}
+                                    decelerationRate="fast"
+                                    onMomentumScrollEnd={(e) => {
+                                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                                        setSelectedHour(index + 1);
+                                    }}
+                                    contentContainerStyle={styles.scrollPickerContent}
+                                >
+                                    <View style={{ height: 100 }} />
+                                    {[...Array(12)].map((_, i) => (
+                                        <TouchableOpacity
+                                            key={i}
+                                            style={styles.scrollPickerItem}
+                                            onPress={() => setSelectedHour(i + 1)}
+                                        >
+                                            <Text style={[
+                                                styles.scrollPickerText,
+                                                { color: selectedHour === i + 1 ? colors.primary : colors.subtext },
+                                                selectedHour === i + 1 && styles.scrollPickerTextActive
+                                            ]}>
+                                                {i + 1}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                    <View style={{ height: 100 }} />
+                                </ScrollView>
+                                <View style={[styles.scrollPickerHighlight, { borderColor: colors.primary }]} />
+                            </View>
+
                             <Text style={[styles.pickerSeparator, { color: colors.text }]}>:</Text>
-                            <Picker
-                                selectedValue={selectedMinute}
-                                onValueChange={setSelectedMinute}
-                                style={[styles.picker, { color: colors.text }]}
-                            >
-                                {[0, 15, 30, 45].map((min) => (
-                                    <Picker.Item key={min} label={min.toString().padStart(2, '0')} value={min} />
-                                ))}
-                            </Picker>
-                            <Picker
-                                selectedValue={selectedPeriod}
-                                onValueChange={setSelectedPeriod}
-                                style={[styles.picker, { color: colors.text }]}
-                            >
-                                <Picker.Item label="AM" value="AM" />
-                                <Picker.Item label="PM" value="PM" />
-                            </Picker>
+
+                            {/* Minute Picker */}
+                            <View style={styles.scrollPickerColumn}>
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
+                                    snapToInterval={50}
+                                    decelerationRate="fast"
+                                    onMomentumScrollEnd={(e) => {
+                                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                                        setSelectedMinute(index);
+                                    }}
+                                    contentContainerStyle={styles.scrollPickerContent}
+                                >
+                                    <View style={{ height: 100 }} />
+                                    {[...Array(60)].map((_, min) => (
+                                        <TouchableOpacity
+                                            key={min}
+                                            style={styles.scrollPickerItem}
+                                            onPress={() => setSelectedMinute(min)}
+                                        >
+                                            <Text style={[
+                                                styles.scrollPickerText,
+                                                { color: selectedMinute === min ? colors.primary : colors.subtext },
+                                                selectedMinute === min && styles.scrollPickerTextActive
+                                            ]}>
+                                                {min.toString().padStart(2, '0')}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                    <View style={{ height: 100 }} />
+                                </ScrollView>
+                                <View style={[styles.scrollPickerHighlight, { borderColor: colors.primary }]} />
+                            </View>
+
+                            <Text style={[styles.pickerSeparator, { color: colors.text }]}> </Text>
+
+                            {/* AM/PM Picker */}
+                            <View style={styles.scrollPickerColumn}>
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
+                                    snapToInterval={50}
+                                    decelerationRate="fast"
+                                    onMomentumScrollEnd={(e) => {
+                                        const periods = ['AM', 'PM'];
+                                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                                        setSelectedPeriod(periods[index] || 'AM');
+                                    }}
+                                    contentContainerStyle={styles.scrollPickerContent}
+                                >
+                                    <View style={{ height: 100 }} />
+                                    {['AM', 'PM'].map((period) => (
+                                        <TouchableOpacity
+                                            key={period}
+                                            style={styles.scrollPickerItem}
+                                            onPress={() => setSelectedPeriod(period)}
+                                        >
+                                            <Text style={[
+                                                styles.scrollPickerText,
+                                                { color: selectedPeriod === period ? colors.primary : colors.subtext },
+                                                selectedPeriod === period && styles.scrollPickerTextActive
+                                            ]}>
+                                                {period}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                    <View style={{ height: 100 }} />
+                                </ScrollView>
+                                <View style={[styles.scrollPickerHighlight, { borderColor: colors.primary }]} />
+                            </View>
                         </View>
                         <View style={styles.timePickerButtons}>
                             <TouchableOpacity
                                 onPress={() => setShowTaskTimePicker(false)}
-                                style={[styles.timePickerBtn, { backgroundColor: colors.glass }]}
+                                style={[styles.timePickerBtn, { backgroundColor: colors.glass, borderWidth: 1.5, borderColor: colors.glassBorder }]}
                             >
-                                <Text style={{ color: colors.text }}>Cancel</Text>
+                                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={handleTimePickerConfirm}
                                 style={[styles.timePickerBtn, { backgroundColor: colors.primary }]}
                             >
-                                <Text style={{ color: '#FFFFFF' }}>Confirm</Text>
+                                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Confirm</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -1063,44 +1152,99 @@ const styles = StyleSheet.create({
     // Time Picker
     timePickerOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         justifyContent: 'flex-end',
     },
     timePickerCard: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: 24,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        padding: 28,
+        paddingBottom: 40,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 10,
     },
     timePickerTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        marginBottom: 20,
+        fontSize: 24,
+        fontWeight: '800',
+        marginBottom: 24,
         textAlign: 'center',
+        letterSpacing: 0.5,
     },
     timePickerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
+        marginBottom: 28,
+        paddingVertical: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 20,
+        paddingHorizontal: 20,
     },
     picker: {
         width: 80,
-        height: 150,
+        height: 160,
     },
     pickerSeparator: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: '700',
-        marginHorizontal: 8,
+        marginHorizontal: 12,
     },
     timePickerButtons: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 16,
+        marginTop: 8,
     },
     timePickerBtn: {
         flex: 1,
-        paddingVertical: 14,
-        borderRadius: 12,
+        paddingVertical: 18,
+        borderRadius: 16,
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+
+    // Scrollable Picker
+    scrollPickerColumn: {
+        height: 250,
+        width: 80,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    scrollPickerContent: {
+        alignItems: 'center',
+    },
+    scrollPickerItem: {
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+    },
+    scrollPickerText: {
+        fontSize: 22,
+        fontWeight: '400',
+    },
+    scrollPickerTextActive: {
+        fontSize: 28,
+        fontWeight: '700',
+        transform: [{ scale: 1.1 }],
+    },
+    scrollPickerHighlight: {
+        position: 'absolute',
+        top: '50%',
+        left: 0,
+        right: 0,
+        height: 50,
+        marginTop: -25,
+        borderTopWidth: 2,
+        borderBottomWidth: 2,
+        pointerEvents: 'none',
+        opacity: 0.3,
     },
 
     // Date Picker
