@@ -316,10 +316,10 @@ export default function Analytics() {
                                 ))}
                             </View>
 
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                 {generateCalendar().map((date, index) => {
                                     if (!date) {
-                                        return <View key={index} style={{ width: 'calc(14.28% - 6px)', aspectRatio: 1 }} />;
+                                        return <View key={index} style={{ width: '14.28%', aspectRatio: 1 }} />;
                                     }
 
                                     const day = date.getDate();
@@ -368,7 +368,7 @@ export default function Analytics() {
                                         <TouchableOpacity
                                             key={index}
                                             onPress={() => setSelectedDate(date)}
-                                            style={{ width: 'calc(14.28% - 6px)', aspectRatio: 1 }}
+                                            style={{ width: '14.28%', aspectRatio: 1, padding: 3 }}
                                         >
                                             <View style={{
                                                 flex: 1,
