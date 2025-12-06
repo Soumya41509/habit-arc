@@ -307,56 +307,58 @@ export default function Timeline() {
                                         )}
                                     </View>
 
-                                    {/* Task Card Column */}
-                                    <Swipeable
-                                        renderRightActions={renderActions}
-                                        renderLeftActions={renderActions}
-                                        overshootRight={false}
-                                        overshootLeft={false}
-                                    >
-                                        <View style={styles.taskCardWrapper}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    setSelectedTask(task);
-                                                    setShowTaskDetails(true);
-                                                }}
-                                                style={styles.taskCard}
-                                            >
-                                                <View style={styles.taskHeader}>
-                                                    <Text style={[styles.taskTime, { color: colors.subtext }]}>
-                                                        {task.time}
-                                                    </Text>
-                                                    {task.duration && (
-                                                        <Ionicons name="repeat-outline" size={14} color={colors.subtext} />
-                                                    )}
-                                                </View>
-                                                <Text style={[
-                                                    styles.taskTitle,
-                                                    { color: colors.text, textDecorationLine: task.completed ? 'line-through' : 'none' }
-                                                ]}>
-                                                    {task.title}
-                                                </Text>
-                                                {task.notes && task.notes.trim() && (
-                                                    <View style={styles.taskNotes}>
-                                                        <Ionicons name="list-outline" size={14} color={colors.subtext} />
-                                                        <Text style={[styles.taskNotesText, { color: colors.subtext }]} numberOfLines={1}>
-                                                            {task.notes}
+                                    {/* Task Card Column - Wrapped in View with flex: 1 to fill space */}
+                                    <View style={{ flex: 1 }}>
+                                        <Swipeable
+                                            renderRightActions={renderActions}
+                                            renderLeftActions={renderActions}
+                                            overshootRight={false}
+                                            overshootLeft={false}
+                                        >
+                                            <View style={styles.taskCardWrapper}>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setSelectedTask(task);
+                                                        setShowTaskDetails(true);
+                                                    }}
+                                                    style={styles.taskCard}
+                                                >
+                                                    <View style={styles.taskHeader}>
+                                                        <Text style={[styles.taskTime, { color: colors.subtext }]}>
+                                                            {task.time}
                                                         </Text>
+                                                        {task.duration && (
+                                                            <Ionicons name="repeat-outline" size={14} color={colors.subtext} />
+                                                        )}
                                                     </View>
-                                                )}
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onPress={() => toggleTask(task.id)}
-                                                style={[styles.checkCircle, {
-                                                    borderColor: task.completed ? colors.accent : colors.subtext
-                                                }]}
-                                            >
-                                                {task.completed && (
-                                                    <View style={[styles.checkFill, { backgroundColor: colors.accent }]} />
-                                                )}
-                                            </TouchableOpacity>
-                                        </View>
-                                    </Swipeable>
+                                                    <Text style={[
+                                                        styles.taskTitle,
+                                                        { color: colors.text, textDecorationLine: task.completed ? 'line-through' : 'none' }
+                                                    ]}>
+                                                        {task.title}
+                                                    </Text>
+                                                    {task.notes && task.notes.trim() && (
+                                                        <View style={styles.taskNotes}>
+                                                            <Ionicons name="list-outline" size={14} color={colors.subtext} />
+                                                            <Text style={[styles.taskNotesText, { color: colors.subtext }]} numberOfLines={1}>
+                                                                {task.notes}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    onPress={() => toggleTask(task.id)}
+                                                    style={[styles.checkCircle, {
+                                                        borderColor: task.completed ? colors.accent : colors.subtext
+                                                    }]}
+                                                >
+                                                    {task.completed && (
+                                                        <View style={[styles.checkFill, { backgroundColor: colors.accent }]} />
+                                                    )}
+                                                </TouchableOpacity>
+                                            </View>
+                                        </Swipeable>
+                                    </View>
                                 </View>
                             );
                         })

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Modal, TextInput, Alert, Platform } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -51,10 +51,15 @@ export default function Home() {
     const [habitTime, setHabitTime] = useState('');
     const [habitIcon, setHabitIcon] = useState('fitness');
     const [habitFrequency, setHabitFrequency] = useState('Daily');
+
     const [showHabitTimePicker, setShowHabitTimePicker] = useState(false);
-    const [habitHour, setHabitHour] = useState(6);
+    const [habitHour, setHabitHour] = useState(12);
     const [habitMinute, setHabitMinute] = useState(0);
     const [habitPeriod, setHabitPeriod] = useState('AM');
+
+    // Delete Confirmation State
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [habitToDelete, setHabitToDelete] = useState(null);
 
 
     const loadData = async () => {
@@ -230,11 +235,20 @@ export default function Home() {
         await loadData();
     };
 
-    const handleDeleteHabit = async (habitId) => {
-        await deleteHabit(habitId);
-        const loadedHabits = await getHabits();
-        setAllHabits(loadedHabits);
-        await loadData();
+    const confirmDeleteHabit = (habitId) => {
+        setHabitToDelete(habitId);
+        setShowDeleteConfirm(true);
+    };
+
+    const proceedDeleteHabit = async () => {
+        if (habitToDelete) {
+            await deleteHabit(habitToDelete);
+            const loadedHabits = await getHabits();
+            setAllHabits(loadedHabits);
+            await loadData();
+        }
+        setShowDeleteConfirm(false);
+        setHabitToDelete(null);
     };
 
     const handleHabitTimeConfirm = () => {
@@ -366,25 +380,34 @@ export default function Home() {
                             </View>
                         </ArcProgress>
                     </View>
-                    {habits.map(habit => (
-                        <TouchableOpacity
-                            key={habit.id}
-                            onPress={() => toggleHabit(habit.id)}
-                            onLongPress={() => handleDeleteHabit(habit.id)}
-                            delayLongPress={500}
-                            style={styles.miniHabitCard}
-                        >
-                            <View style={[styles.habitIcon, { backgroundColor: colors.primary + '20' }]}>
-                                <Ionicons name={habit.icon || 'star'} size={20} color={colors.primary} />
-                            </View>
-                            <Text style={[styles.habitTitle, { color: colors.text }]}>{habit.title}</Text>
-                            <Ionicons
-                                name={logs.includes(habit.id) ? "checkmark-circle" : "ellipse-outline"}
-                                size={22}
-                                color={logs.includes(habit.id) ? colors.accent : colors.subtext}
-                            />
-                        </TouchableOpacity>
-                    ))}
+                    {habits.map(habit => {
+                        const isCompleted = logs.includes(habit.id);
+                        return (
+                            <TouchableOpacity
+                                key={habit.id}
+                                onPress={() => toggleHabit(habit.id)}
+                                onLongPress={() => confirmDeleteHabit(habit.id)}
+                                delayLongPress={500}
+                                style={styles.miniHabitCard}
+                            >
+                                <View style={[styles.habitIcon, { backgroundColor: isCompleted ? '#10B98120' : colors.primary + '20' }]}>
+                                    <Ionicons name={habit.icon || 'star'} size={20} color={isCompleted ? '#10B981' : colors.primary} />
+                                </View>
+                                <Text style={[
+                                    styles.habitTitle,
+                                    {
+                                        color: isCompleted ? '#10B981' : colors.text,
+                                        textDecorationLine: isCompleted ? 'line-through' : 'none'
+                                    }
+                                ]}>{habit.title}</Text>
+                                <Ionicons
+                                    name={isCompleted ? "checkmark-circle" : "ellipse-outline"}
+                                    size={22}
+                                    color={isCompleted ? '#10B981' : colors.subtext}
+                                />
+                            </TouchableOpacity>
+                        );
+                    })}
                 </GlassView>
 
 
@@ -803,7 +826,7 @@ export default function Home() {
                                             <View style={{ flex: 1 }} />
 
                                             <TouchableOpacity
-                                                onPress={() => handleDeleteHabit(habit.id)}
+                                                onPress={() => confirmDeleteHabit(habit.id)}
                                                 style={[styles.habitDeleteBtn, { backgroundColor: colors.danger + '20', marginTop: 4 }]}
                                             >
                                                 <Ionicons name="trash-outline" size={20} color={colors.danger} />
@@ -1019,6 +1042,32 @@ export default function Home() {
                             </GlassView>
                         </View>
                     </Modal>
+                </View>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal visible={showDeleteConfirm} transparent animationType="fade">
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <GlassView style={{ width: '100%', maxWidth: 340, padding: 24, borderRadius: 24, backgroundColor: colors.background }}>
+                        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 8 }}>Delete Habit?</Text>
+                        <Text style={{ fontSize: 15, color: colors.subtext, marginBottom: 24, lineHeight: 22 }}>
+                            Are you sure you want to delete this habit? This action cannot be undone.
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => setShowDeleteConfirm(false)}
+                                style={{ padding: 12, borderRadius: 12 }}
+                            >
+                                <Text style={{ color: colors.subtext, fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={proceedDeleteHabit}
+                                style={{ backgroundColor: colors.danger, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
+                            >
+                                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </GlassView>
                 </View>
             </Modal>
         </View>
