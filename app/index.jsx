@@ -84,7 +84,7 @@ export default function SplashScreen() {
         // Transition timer
         const timer = setTimeout(async () => {
             try {
-                const onboarded = await SecureStore.getItemAsync('habitarc_onboarded_completed');
+                const onboarded = (await SecureStore.getItemAsync('routiva_onboarded_completed')) || (await SecureStore.getItemAsync('habitarc_onboarded_completed'));
                 if (onboarded === 'true') {
                     router.replace('/(tabs)');
                 } else {
@@ -193,7 +193,7 @@ export default function SplashScreen() {
                             type="display-lg"
                             style={[styles.appName, { color: colors.onSurface }]}
                         >
-                            HabitArc
+                            Routiva
                         </ThemedText>
                         <ThemedText
                             type="body-lg"

@@ -1,6 +1,6 @@
-# 🏛️ HabitArc Architecture & System Design
+# 🏛️ Routiva Architecture & System Design
 
-This document details the high-level architecture, state lifecycle, and rendering pipelines of **HabitArc**.
+This document details the high-level architecture, state lifecycle, and rendering pipelines of **Routiva**.
 
 ```
   ┌─────────────────────────────────────────────────────────────┐
@@ -28,11 +28,12 @@ This document details the high-level architecture, state lifecycle, and renderin
 
 ## 1. Local Database Layer (`lib/db.js`)
 
-HabitArc uses an embedded **SQLite** engine operating with **WAL (Write-Ahead Logging)** mode for high concurrency and sub-millisecond query execution:
+Routiva uses an embedded **SQLite** engine operating with **WAL (Write-Ahead Logging)** mode for high concurrency and sub-millisecond query execution:
 
-- **`habits` Table**: Stores habit metadata (title, icon, color, serialized recurrence array, and creation timestamp).
+- **`habits` Table**: Stores routine/habit metadata (title, icon, color, serialized recurrence array, and creation timestamp).
 - **`habit_logs` Table**: Records daily completions with unique composite indexing `(habit_id, completed_at)` to guarantee zero duplicate logs.
-- **Cascading Deletions**: Deleting a habit automatically cascades and purges historical completion logs cleanly.
+- **Cascading Deletions**: Deleting a routine automatically cascades and purges historical completion logs cleanly.
+- **Zero Cloud Dependency**: Operates entirely on-device (`routiva.db`) with automated data migration from legacy instances.
 
 ---
 

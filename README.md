@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/banner.svg" alt="HabitArc Banner" width="100%" />
+<img src="./assets/banner.svg" alt="Routiva Banner" width="100%" />
 
 <br/><br/>
 
@@ -18,9 +18,9 @@
 
 ## ✦ Design Philosophy & Vision
 
-**HabitArc** redefines personal tracking by shifting away from rigid numbers, aggressive red streaks, and cognitive guilt. Instead, it visualizes consistency through **organic, living arcs of momentum** that reflect natural human cadences.
+**Routiva** redefines personal tracking by shifting away from rigid numbers, aggressive red streaks, and cognitive guilt. Instead, it visualizes consistency through **organic, living arcs of momentum** that reflect natural human cadences.
 
-By combining tactile frosted glassmorphism, soothing lavender accents, and responsive micro-interactions, HabitArc creates an atmosphere of quiet accomplishment—turning daily routines into moments of calm reflection.
+By combining tactile frosted glassmorphism, soothing lavender accents, and responsive micro-interactions, Routiva creates an atmosphere of quiet accomplishment—turning daily routines into moments of calm reflection.
 
 ---
 
@@ -30,7 +30,7 @@ By combining tactile frosted glassmorphism, soothing lavender accents, and respo
   <tr>
     <td width="33%" align="center" valign="top">
       <h3>⚡ Zero Friction</h3>
-      <p>Instant launch with zero logins, accounts, or mandatory sync. Open the app and log your habit in a single tactile tap.</p>
+      <p>Instant launch with zero logins, accounts, or mandatory sync. Open the app and log your routine in a single tactile tap.</p>
     </td>
     <td width="33%" align="center" valign="top">
       <h3>🌱 Gentle Cadence</h3>
@@ -55,7 +55,7 @@ By combining tactile frosted glassmorphism, soothing lavender accents, and respo
 ### 🎯 Daily Tracking & Momentum
 - **Rising Arc Indicators**: Dynamic multi-gradient SVG arcs showing completion milestones.
 - **Tactile Cards**: Frosted glass containers (`GlassView`) with soft blur and gentle elevation.
-- **Customizable Habits**: Tailor icons, color accents, and weekly recurrence patterns.
+- **Customizable Routines**: Tailor icons, color accents, and weekly recurrence patterns.
 
 ### 📊 Insights & Consistency
 - **Trend Analytics**: Comprehensive completion records and weekly momentum breakdowns.
@@ -70,7 +70,7 @@ By combining tactile frosted glassmorphism, soothing lavender accents, and respo
 
 ## 🏛️ System Architecture
 
-HabitArc is built on a high-velocity reactive stack engineered for zero latency and offline privacy.
+Routiva is built on a high-velocity reactive stack engineered for zero latency and offline privacy.
 
 - **Client Runtime**: React Native 0.86 with Expo SDK 57
 - **Routing Engine**: Expo Router (Modern file-based hierarchy with native stack and tab transitions)
@@ -101,5 +101,5 @@ For permissions or inquiries: `soumyaranjanpanigrahi111@gmail.com`
 <br/>
 
 <div align="center">
-  <sub>© 2026 HabitArc • Soumya Ranjan Panigrahi. All Rights Reserved.</sub>
+  <sub>© 2026 Routiva • Soumya Ranjan Panigrahi. All Rights Reserved.</sub>
 </div>

@@ -250,6 +250,7 @@ export default function Onboarding() {
 
     const completeOnboarding = async () => {
         try {
+            await SecureStore.setItemAsync('routiva_onboarded_completed', 'true');
             await SecureStore.setItemAsync('habitarc_onboarded_completed', 'true');
         } catch (e) {
             // Ignore error

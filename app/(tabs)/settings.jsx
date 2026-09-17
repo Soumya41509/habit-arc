@@ -14,6 +14,7 @@ export default function Settings() {
 
     const handleReplayOnboarding = async () => {
         try {
+            await SecureStore.deleteItemAsync('routiva_onboarded_completed');
             await SecureStore.deleteItemAsync('habitarc_onboarded_completed');
         } catch (e) {}
         router.replace('/onboarding');
@@ -45,7 +46,7 @@ export default function Settings() {
                         />
                     </View>
                     <ThemedText type="headline-md" style={styles.name}>
-                        HabitArc User
+                        Routiva User
                     </ThemedText>
                     <ThemedText type="body-sm" style={[styles.phone, { color: colors.subtext }]}>
                         Local Personal Profile • Private
@@ -156,7 +157,7 @@ export default function Settings() {
                 </View>
 
                 <ThemedText type="label-sm" style={[styles.version, { color: colors.muted }]}>
-                    HabitArc v1.0.0 • Calm Arc Design System
+                    Routiva v1.0.0 • Calm Arc Design System
                 </ThemedText>
             </View>
         </Background>

@@ -11,17 +11,21 @@ const ThemeContext = createContext({
     toggleTheme: () => {},
 });
 
-const THEME_STORAGE_KEY = 'habitarc_user_theme_preference';
+const THEME_STORAGE_KEY = 'routiva_user_theme_preference';
+const OLD_THEME_STORAGE_KEY = 'habitarc_user_theme_preference';
 
 export function ThemeProvider({ children }) {
     const systemColorScheme = _useColorScheme();
     const [themePreference, setThemePreference] = useState('system');
 
     useEffect(() => {
-        // Load saved theme preference
+        // Load saved theme preference (with migration fallback)
         (async () => {
             try {
-                const saved = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
+                let saved = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
+                if (!saved) {
+                    saved = await SecureStore.getItemAsync(OLD_THEME_STORAGE_KEY);
+                }
                 if (saved && (saved === 'light' || saved === 'dark' || saved === 'system')) {
                     setThemePreference(saved);
                 }

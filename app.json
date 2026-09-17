@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "HabitArc",
-    "slug": "HabitArc",
-    "scheme": "habitarc",
+    "name": "Routiva",
+    "slug": "routiva",
+    "scheme": "routiva",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
