@@ -3,11 +3,9 @@ import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Background } from '../components/Background';
 import { ArcLogo } from '../components/ArcLogo';
-import { useAuth } from '../hooks/useAuth';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence } from 'react-native-reanimated';
 
 export default function Index() {
-    const { session, loading } = useAuth();
     const router = useRouter();
     const [isSplashFinished, setIsSplashFinished] = useState(false);
 
@@ -20,27 +18,23 @@ export default function Index() {
 
         const timer = setTimeout(() => {
             setIsSplashFinished(true);
-        }, 2500);
+        }, 2000);
 
         return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
-        if (isSplashFinished && !loading) {
-            if (session) {
-                router.replace('/(tabs)');
-            } else {
-                router.replace('/onboarding');
-            }
+        if (isSplashFinished) {
+            router.replace('/onboarding');
         }
-    }, [isSplashFinished, loading, session]);
+    }, [isSplashFinished]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
         transform: [{ scale: scale.value }],
     }));
 
-    if (!isSplashFinished || loading) {
+    if (!isSplashFinished) {
         return (
             <Background style={styles.container}>
                 <Animated.View style={animatedStyle}>

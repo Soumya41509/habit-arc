@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { StyleSheet, View, Dimensions, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Background } from '../components/Background';
@@ -33,14 +33,15 @@ const SLIDES = [
 
 export default function Onboarding() {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const flatListRef = useRef(null);
     const router = useRouter();
 
     const handleNext = () => {
         if (currentIndex < SLIDES.length - 1) {
-            // Scroll to next (implementation simplified for this step, usually requires ref)
+            flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
             setCurrentIndex(currentIndex + 1);
         } else {
-            router.replace('/(auth)/login');
+            router.replace('/(tabs)');
         }
     };
 
@@ -59,6 +60,7 @@ export default function Onboarding() {
     return (
         <Background>
             <FlatList
+                ref={flatListRef}
                 data={SLIDES}
                 renderItem={renderItem}
                 horizontal

@@ -6,8 +6,7 @@ import { GlassView } from '../../components/GlassView';
 import { ThemedText } from '../../components/ThemedText';
 import { ArcProgress } from '../../components/ArcProgress';
 import { Colors } from '../../constants/Colors';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import { getHabitsWithTodayStatus, toggleHabitCompletion } from '../../lib/db';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
@@ -15,59 +14,32 @@ export default function Home() {
     const [habits, setHabits] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [todayProgress, setTodayProgress] = useState(0);
-    const { session } = useAuth();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const router = useRouter();
 
     const fetchHabits = async () => {
-        if (!session?.user) return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const habitsData = await getHabitsWithTodayStatus(today);
 
-        const today = new Date().toISOString().split('T')[0];
+            setHabits(habitsData);
 
-        // Fetch habits
-        const { data: habitsData, error: habitsError } = await supabase
-            .from('habits')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (habitsError) {
-            console.error(habitsError);
-            return;
-        }
-
-        // Fetch logs for today
-        const { data: logsData, error: logsError } = await supabase
-            .from('habit_logs')
-            .select('habit_id')
-            .eq('completed_at', today);
-
-        if (logsError) {
-            console.error(logsError);
-            return;
-        }
-
-        const completedHabitIds = new Set(logsData.map(log => log.habit_id));
-
-        const habitsWithStatus = habitsData.map(habit => ({
-            ...habit,
-            completed: completedHabitIds.has(habit.id),
-        }));
-
-        setHabits(habitsWithStatus);
-
-        // Calculate progress
-        if (habitsData.length > 0) {
-            setTodayProgress(completedHabitIds.size / habitsData.length);
-        } else {
-            setTodayProgress(0);
+            if (habitsData && habitsData.length > 0) {
+                const completedCount = habitsData.filter(h => h.completed).length;
+                setTodayProgress(completedCount / habitsData.length);
+            } else {
+                setTodayProgress(0);
+            }
+        } catch (error) {
+            console.error('Error fetching local habits:', error);
         }
     };
 
     useFocusEffect(
         useCallback(() => {
             fetchHabits();
-        }, [session])
+        }, [])
     );
 
     const onRefresh = async () => {
@@ -78,34 +50,14 @@ export default function Home() {
 
     const toggleHabit = async (habit) => {
         const today = new Date().toISOString().split('T')[0];
+        const newStatus = await toggleHabitCompletion(habit.id, today, habit.completed);
 
-        if (habit.completed) {
-            // Remove log
-            const { error } = await supabase
-                .from('habit_logs')
-                .delete()
-                .eq('habit_id', habit.id)
-                .eq('completed_at', today);
-
-            if (!error) {
-                setHabits(prev => prev.map(h => h.id === habit.id ? { ...h, completed: false } : h));
-                // Recalculate progress locally for instant feedback
-                const completedCount = habits.filter(h => h.id !== habit.id && h.completed).length;
-                setTodayProgress(completedCount / habits.length);
-            }
-        } else {
-            // Add log
-            const { error } = await supabase
-                .from('habit_logs')
-                .insert({ habit_id: habit.id, completed_at: today });
-
-            if (!error) {
-                setHabits(prev => prev.map(h => h.id === habit.id ? { ...h, completed: true } : h));
-                // Recalculate progress locally
-                const completedCount = habits.filter(h => h.id !== habit.id && h.completed).length + 1;
-                setTodayProgress(completedCount / habits.length);
-            }
-        }
+        setHabits(prev => {
+            const updated = prev.map(h => h.id === habit.id ? { ...h, completed: newStatus } : h);
+            const completedCount = updated.filter(h => h.completed).length;
+            setTodayProgress(updated.length > 0 ? completedCount / updated.length : 0);
+            return updated;
+        });
     };
 
     return (
@@ -116,7 +68,7 @@ export default function Home() {
             >
                 <View style={styles.header}>
                     <View>
-                        <ThemedText style={styles.greeting}>Hello, {session?.user?.user_metadata?.full_name?.split(' ')[0] || 'User'}</ThemedText>
+                        <ThemedText style={styles.greeting}>Welcome back</ThemedText>
                         <ThemedText type="title">Your Progress</ThemedText>
                     </View>
                     <GlassView intensity={30} style={styles.avatar}>

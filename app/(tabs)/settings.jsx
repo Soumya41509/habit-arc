@@ -1,36 +1,15 @@
-import { StyleSheet, View, Alert, Switch } from 'react-native';
+import { StyleSheet, View, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Background } from '../../components/Background';
 import { GlassView } from '../../components/GlassView';
 import { ThemedText } from '../../components/ThemedText';
-import { Button } from '../../components/Button';
-import { useAuth } from '../../hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
 export default function Settings() {
-    const { signOut, session } = useAuth();
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
-
-    const handleLogout = async () => {
-        Alert.alert(
-            'Sign Out',
-            'Are you sure you want to sign out?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Sign Out',
-                    style: 'destructive',
-                    onPress: async () => {
-                        await signOut();
-                        router.replace('/(auth)/login');
-                    }
-                },
-            ]
-        );
-    };
 
     return (
         <Background>
@@ -44,10 +23,10 @@ export default function Settings() {
                         <ThemedText style={{ fontSize: 32 }}>👤</ThemedText>
                     </View>
                     <ThemedText type="subtitle" style={styles.name}>
-                        {session?.user?.user_metadata?.full_name || 'User'}
+                        HabitArc User
                     </ThemedText>
                     <ThemedText style={styles.phone}>
-                        {session?.user?.email?.replace('@habit.arc', '')}
+                        Local Personal Profile
                     </ThemedText>
                 </GlassView>
 
@@ -72,15 +51,7 @@ export default function Settings() {
                     </GlassView>
                 </View>
 
-                <Button
-                    title="Sign Out"
-                    onPress={handleLogout}
-                    style={styles.logoutButton}
-                    textStyle={{ color: '#EF4444' }}
-                    variant="ghost"
-                />
-
-                <ThemedText style={styles.version}>Version 1.0.0</ThemedText>
+                <ThemedText style={styles.version}>HabitArc v1.0.0 • Offline Mode</ThemedText>
             </View>
         </Background>
     );

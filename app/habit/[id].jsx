@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Alert, ScrollView } from 'react-native';
+import { StyleSheet, View, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Background } from '../../components/Background';
 import { GlassView } from '../../components/GlassView';
 import { ThemedText } from '../../components/ThemedText';
 import { Button } from '../../components/Button';
 import { Colors } from '../../constants/Colors';
-import { supabase } from '../../lib/supabase';
+import { getHabitDetails, deleteHabit } from '../../lib/db';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
@@ -23,27 +23,20 @@ export default function HabitDetails() {
     }, [id]);
 
     const fetchHabitDetails = async () => {
-        const { data, error } = await supabase
-            .from('habits')
-            .select('*')
-            .eq('id', id)
-            .single();
+        try {
+            const data = await getHabitDetails(id);
+            if (!data) {
+                Alert.alert('Error', 'Could not find habit');
+                router.back();
+                return;
+            }
 
-        if (error) {
+            setHabit(data);
+            setStats({ total: data.totalCompletions || 0, streak: 0 });
+        } catch (error) {
             Alert.alert('Error', 'Could not fetch habit details');
             router.back();
-            return;
         }
-
-        setHabit(data);
-
-        // Fetch stats
-        const { count } = await supabase
-            .from('habit_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('habit_id', id);
-
-        setStats({ total: count || 0, streak: 0 }); // Streak logic can be added later
     };
 
     const handleDelete = () => {
@@ -56,15 +49,11 @@ export default function HabitDetails() {
                     text: 'Delete',
                     style: 'destructive',
                     onPress: async () => {
-                        const { error } = await supabase
-                            .from('habits')
-                            .delete()
-                            .eq('id', id);
-
-                        if (error) {
-                            Alert.alert('Error', error.message);
-                        } else {
+                        try {
+                            await deleteHabit(id);
                             router.back();
+                        } catch (error) {
+                            Alert.alert('Error', error.message || 'Could not delete habit');
                         }
                     },
                 },
@@ -140,8 +129,6 @@ export default function HabitDetails() {
         </Background>
     );
 }
-
-import { TouchableOpacity } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {

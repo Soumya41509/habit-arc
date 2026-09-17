@@ -7,8 +7,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { Colors } from '../../constants/Colors';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import { addHabit } from '../../lib/db';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
@@ -23,7 +22,6 @@ export default function AddHabit() {
     const [frequency, setFrequency] = useState(DAYS);
     const [loading, setLoading] = useState(false);
 
-    const { session } = useAuth();
     const router = useRouter();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
@@ -37,7 +35,7 @@ export default function AddHabit() {
     };
 
     const handleSave = async () => {
-        if (!title) {
+        if (!title.trim()) {
             Alert.alert('Error', 'Please enter a habit title');
             return;
         }
@@ -49,23 +47,20 @@ export default function AddHabit() {
 
         setLoading(true);
 
-        const { error } = await supabase
-            .from('habits')
-            .insert({
-                user_id: session.user.id,
-                title,
+        try {
+            await addHabit({
+                title: title.trim(),
                 icon: selectedIcon,
                 color: selectedColor,
                 frequency: frequency,
             });
 
-        setLoading(false);
-
-        if (error) {
-            Alert.alert('Error', error.message);
-        } else {
+            setLoading(false);
             Alert.alert('Success', 'Habit created successfully!');
             router.back();
+        } catch (error) {
+            setLoading(false);
+            Alert.alert('Error', error.message || 'Failed to save habit locally');
         }
     };
 

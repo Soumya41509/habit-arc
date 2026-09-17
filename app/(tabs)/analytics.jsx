@@ -5,8 +5,7 @@ import { Background } from '../../components/Background';
 import { GlassView } from '../../components/GlassView';
 import { ThemedText } from '../../components/ThemedText';
 import { Colors } from '../../constants/Colors';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import { getWeeklyLogs } from '../../lib/db';
 import { useColorScheme } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 
@@ -16,46 +15,37 @@ const CHART_WIDTH = width - 80;
 
 export default function Analytics() {
     const [weeklyData, setWeeklyData] = useState([]);
-    const { session } = useAuth();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
     const fetchAnalytics = async () => {
-        if (!session?.user) return;
+        try {
+            const today = new Date();
+            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(today.getDate() - (6 - i));
+                return d.toISOString().split('T')[0];
+            });
 
-        const today = new Date();
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const d = new Date();
-            d.setDate(today.getDate() - (6 - i));
-            return d.toISOString().split('T')[0];
-        });
+            const logsData = await getWeeklyLogs(last7Days[0], last7Days[6]);
 
-        // Fetch all logs for the last 7 days
-        const { data: logsData, error } = await supabase
-            .from('habit_logs')
-            .select('completed_at')
-            .gte('completed_at', last7Days[0])
-            .lte('completed_at', last7Days[6]);
+            // Count completions per day
+            const counts = last7Days.map(date => ({
+                date,
+                day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+                count: (logsData || []).filter(log => log.completed_at === date).length,
+            }));
 
-        if (error) {
-            console.error(error);
-            return;
+            setWeeklyData(counts);
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
         }
-
-        // Count completions per day
-        const counts = last7Days.map(date => ({
-            date,
-            day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-            count: logsData.filter(log => log.completed_at === date).length,
-        }));
-
-        setWeeklyData(counts);
     };
 
     useFocusEffect(
         useCallback(() => {
             fetchAnalytics();
-        }, [session])
+        }, [])
     );
 
     const maxCount = Math.max(...weeklyData.map(d => d.count), 5); // Minimum scale of 5
