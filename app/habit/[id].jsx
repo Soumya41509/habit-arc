@@ -1,209 +1,243 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, View, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Background } from '../../components/Background';
-import { GlassView } from '../../components/GlassView';
-import { ThemedText } from '../../components/ThemedText';
-import { Button } from '../../components/Button';
-import { Colors } from '../../constants/Colors';
-import { getHabitDetails, deleteHabit } from '../../lib/db';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { getHabits, deleteHabit, getLogs, removeHabitCompletion, getHabitStats } from '../../lib/storage';
+import GlassView from '../../components/GlassView';
+import StatsCard from '../../components/StatsCard';
 
 export default function HabitDetails() {
     const { id } = useLocalSearchParams();
-    const [habit, setHabit] = useState(null);
-    const [stats, setStats] = useState({ total: 0, streak: 0 });
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
+    const { colors } = useTheme();
+    const [habit, setHabit] = useState(null);
+    const [history, setHistory] = useState([]);
+    const [stats, setStats] = useState(null);
 
     useEffect(() => {
-        fetchHabitDetails();
+        loadHabit();
     }, [id]);
 
-    const fetchHabitDetails = async () => {
-        try {
-            const data = await getHabitDetails(id);
-            if (!data) {
-                Alert.alert('Error', 'Could not find habit');
-                router.back();
-                return;
-            }
+    const loadHabit = async () => {
+        const habits = await getHabits();
+        const found = habits.find(h => h.id === id);
+        if (found) {
+            setHabit(found);
+            // Load history
+            const logs = await getLogs();
+            const habitLogs = Object.entries(logs)
+                .filter(([date, habitIds]) => habitIds.includes(id))
+                .map(([date]) => date)
+                .sort((a, b) => new Date(b) - new Date(a))
+                .slice(0, 30); // Last 30 completions
+            setHistory(habitLogs);
 
-            setHabit(data);
-            setStats({ total: data.totalCompletions || 0, streak: 0 });
-        } catch (error) {
-            Alert.alert('Error', 'Could not fetch habit details');
-            router.back();
+            // Load stats
+            const habitStats = await getHabitStats(id);
+            setStats(habitStats);
         }
     };
 
     const handleDelete = () => {
         Alert.alert(
-            'Delete Habit',
-            'Are you sure you want to delete this habit? This action cannot be undone.',
+            "Delete Habit",
+            "Are you sure you want to delete this habit?",
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: "Cancel", style: "cancel" },
                 {
-                    text: 'Delete',
-                    style: 'destructive',
+                    text: "Delete",
+                    style: "destructive",
                     onPress: async () => {
-                        try {
-                            await deleteHabit(id);
-                            router.back();
-                        } catch (error) {
-                            Alert.alert('Error', error.message || 'Could not delete habit');
-                        }
-                    },
-                },
+                        await deleteHabit(id);
+                        router.back();
+                    }
+                }
             ]
         );
     };
 
-    if (!habit) return null;
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    };
+
+    if (!habit) return <View style={[styles.container, { backgroundColor: colors.background }]} />;
 
     return (
-        <Background>
-            <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={isDark ? '#fff' : '#000'} />
-                    </TouchableOpacity>
-                    <ThemedText type="title">Details</ThemedText>
-                    <View style={{ width: 24 }} />
-                </View>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleDelete}>
+                    <Ionicons name="trash-outline" size={24} color="#ef4444" />
+                </TouchableOpacity>
+            </View>
 
-                <GlassView intensity={30} style={styles.card}>
-                    <View style={[styles.iconContainer, { backgroundColor: habit.color }]}>
-                        <Ionicons name={habit.icon} size={40} color="#fff" />
-                    </View>
-                    <ThemedText type="title" style={styles.title}>{habit.title}</ThemedText>
-
-                    <View style={styles.statsRow}>
-                        <View style={styles.stat}>
-                            <ThemedText type="title">{stats.total}</ThemedText>
-                            <ThemedText style={styles.statLabel}>Completions</ThemedText>
-                        </View>
-                        <View style={styles.stat}>
-                            <ThemedText type="title">0</ThemedText>
-                            <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
-                        </View>
-                    </View>
-                </GlassView>
-
-                <View style={styles.section}>
-                    <ThemedText type="subtitle" style={styles.sectionTitle}>Schedule</ThemedText>
-                    <GlassView intensity={20} style={styles.scheduleCard}>
-                        <View style={styles.daysRow}>
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                                <View
-                                    key={day}
-                                    style={[
-                                        styles.dayBadge,
-                                        habit.frequency.includes(day) && { backgroundColor: habit.color }
-                                    ]}
-                                >
-                                    <ThemedText
-                                        style={[
-                                            styles.dayText,
-                                            habit.frequency.includes(day) && { color: '#fff' }
-                                        ]}
-                                    >
-                                        {day[0]}
-                                    </ThemedText>
-                                </View>
-                            ))}
-                        </View>
+            <ScrollView contentContainerStyle={styles.content}>
+                <View style={styles.iconContainer}>
+                    <GlassView style={styles.iconGlass}>
+                        <Ionicons name={habit.icon || 'star'} size={64} color={colors.primary} />
                     </GlassView>
+                    <Text style={[styles.title, { color: colors.text }]}>{habit.title}</Text>
+                    <Text style={[styles.subtitle, { color: colors.subtext }]}>{habit.frequency || 'Daily'}</Text>
                 </View>
 
-                <Button
-                    title="Delete Habit"
-                    onPress={handleDelete}
-                    variant="ghost"
-                    style={styles.deleteButton}
-                    textStyle={{ color: '#EF4444' }}
-                />
+                {/* Statistics Cards */}
+                {stats && (
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statsRow}>
+                            <StatsCard
+                                icon="flame"
+                                label="Current Streak"
+                                value={stats.currentStreak}
+                                color="#FF9500"
+                            />
+                            <StatsCard
+                                icon="trophy"
+                                label="Best Streak"
+                                value={stats.longestStreak}
+                                color={colors.primary}
+                            />
+                        </View>
+                        <View style={styles.statsRow}>
+                            <StatsCard
+                                icon="checkmark-circle"
+                                label="Total Completions"
+                                value={stats.totalCompletions}
+                                color={colors.accent}
+                            />
+                            <StatsCard
+                                icon="analytics"
+                                label="30-Day Rate"
+                                value={`${stats.completionRate}%`}
+                                color={colors.secondary}
+                            />
+                        </View>
+                    </View>
+                )}
+
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent History</Text>
+                <GlassView style={styles.historyCard}>
+                    {history.length === 0 ? (
+                        <View style={styles.emptyHistory}>
+                            <Ionicons name="calendar-outline" size={48} color={colors.subtext} style={{ opacity: 0.5 }} />
+                            <Text style={[styles.emptyText, { color: colors.subtext }]}>
+                                No completions yet.{'\n'}Start tracking today!
+                            </Text>
+                        </View>
+                    ) : (
+                        history.map((date, index) => (
+                            <View key={date} style={[
+                                styles.historyRow,
+                                index < history.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.glassBorder }
+                            ]}>
+                                <View style={styles.historyLeft}>
+                                    <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+                                    <Text style={[styles.historyDate, { color: colors.text }]}>
+                                        {formatDate(date)}
+                                    </Text>
+                                </View>
+                                <Text style={[styles.daysAgo, { color: colors.subtext }]}>
+                                    {getDaysAgo(date)}
+                                </Text>
+                            </View>
+                        ))
+                    )}
+                </GlassView>
             </ScrollView>
-        </Background>
+        </View>
     );
 }
 
+const getDaysAgo = (dateStr) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const diffTime = Math.abs(today - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
+};
+
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        paddingTop: 60,
+        flex: 1,
+        paddingTop: 20,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 30,
+        padding: 20,
     },
-    card: {
-        padding: 30,
-        borderRadius: 24,
-        alignItems: 'center',
-        marginBottom: 30,
+    content: {
+        padding: 20,
     },
     iconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    iconGlass: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
+        marginBottom: 20,
     },
     title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 18,
+    },
+    statsContainer: {
         marginBottom: 24,
-        textAlign: 'center',
     },
     statsRow: {
         flexDirection: 'row',
-        gap: 40,
-    },
-    stat: {
-        alignItems: 'center',
-    },
-    statLabel: {
-        opacity: 0.6,
-        fontSize: 12,
-    },
-    section: {
-        marginBottom: 30,
+        marginHorizontal: -6,
+        marginBottom: 12,
     },
     sectionTitle: {
+        fontSize: 20,
+        fontWeight: '600',
         marginBottom: 16,
     },
-    scheduleCard: {
-        padding: 20,
-        borderRadius: 20,
+    historyCard: {
+        padding: 16,
     },
-    daysRow: {
+    historyRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-    },
-    dayBadge: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        justifyContent: 'center',
         alignItems: 'center',
+        paddingVertical: 12,
     },
-    dayText: {
-        fontSize: 12,
-        fontWeight: '600',
+    historyLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
     },
-    deleteButton: {
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        borderWidth: 1,
-        borderColor: 'rgba(239, 68, 68, 0.2)',
+    historyDate: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    daysAgo: {
+        fontSize: 14,
+    },
+    emptyHistory: {
+        alignItems: 'center',
+        padding: 40,
+    },
+    emptyText: {
+        textAlign: 'center',
+        fontSize: 14,
+        marginTop: 16,
+        lineHeight: 20,
     },
 });

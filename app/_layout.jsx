@@ -1,37 +1,28 @@
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { ThemeProvider } from '../context/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-import { useColorScheme } from 'react-native';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
-    const colorScheme = useColorScheme();
-    const [loaded] = useFonts({
-        // We can add custom fonts here later if needed
-    });
+    return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <ThemeProvider>
+                <LayoutContent />
+            </ThemeProvider>
+        </GestureHandlerRootView>
+    );
+}
 
-    useEffect(() => {
-        if (loaded) {
-            SplashScreen.hideAsync();
-        }
-    }, [loaded]);
-
-    if (!loaded) {
-        return null;
-    }
-
+function LayoutContent() {
     return (
         <>
             <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="add-habit" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="habit/[id]" options={{ presentation: 'card' }} />
             </Stack>
-            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+            <StatusBar style="auto" />
         </>
     );
 }
