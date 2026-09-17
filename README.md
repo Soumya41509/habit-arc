@@ -4,158 +4,107 @@
 
 ### *Build your rhythm. One arc at a time.*
 
-A mindful, private, and aesthetic habit-tracking application built with **React Native**, **Expo Router**, and **Expo SQLite**, styled with the **Calm Arc Flow** design system.
+A mindful, private, and aesthetic habit-tracking mobile experience crafted with **React Native**, **Expo Router**, and **Expo SQLite**, designed around the **Calm Arc Flow** design system.
 
-[![React Native](https://img.shields.io/badge/React_Native-0.86-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev/)
-[![Expo](https://img.shields.io/badge/Expo-57-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
-[![SQLite](https://img.shields.io/badge/SQLite-Local_First-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-9B8AFB?style=for-the-badge)](LICENSE)
+<br/>
 
-<br />
+[![React Native](https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-SDK_57-000020?style=flat-square&logo=expo&logoColor=white)](https://expo.dev/)
+[![SQLite](https://img.shields.io/badge/SQLite-Local_First-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-9B8AFB?style=flat-square)](LICENSE)
 
-```
-   ╭───────────────────────────────────────────────────────────╮
-   │   🌸 Sunrise Salmon   →   🌺 Blush Pink   →   💜 Lavender │
-   │   →   🌊 Sky Cerulean  →   🌱 Mint Momentum Milestone     │
-   ╰───────────────────────────────────────────────────────────╯
-```
+<br/>
 
 </div>
 
 ---
 
-## 📖 Overview
+## ✦ Design Philosophy & Vision
 
-**HabitArc** transforms daily routines into moments of calm accomplishment. Designed without guilt, pressure, or cognitive overload, HabitArc visualizes your consistency as a rising, organic arc of progress.
+**HabitArc** redefines personal tracking by shifting away from rigid numbers, aggressive red streaks, and cognitive guilt. Instead, it visualizes consistency through **organic, living arcs of momentum** that reflect natural human cadences.
 
-Whether you're developing a morning routine, reading daily, or meditating, HabitArc provides a tactile, distraction-free environment that puts your focus where it belongs: **on showing up.**
-
----
-
-## ✨ Key Features
-
-### 🔒 100% Private & Local-First
-- **No Cloud Lock-in**: All habit records, streaks, and timestamps are stored in an on-device **SQLite** database (`habitarc.db`).
-- **Instant Speed**: Zero network latency, instant responsiveness, and full offline functionality.
-- **No Mandatory Accounts**: No logins, email verifications, or passwords needed.
-
-### 🎨 Calm Arc Flow Design System
-- **Dual Themes**: Tailored **Dark Mode** (`#12131A`) for evening reflection and **Light Mode** (`#FAF8FF`) for daytime focus.
-- **Glassmorphic Depth**: Frosted blur surfaces, soft ambient aura glows, and tactile pill-shaped buttons.
-- **Dynamic Arc Progress**: Rising SVG arcs with multi-gradient stops and milestone spheres instead of rigid percentage bars.
-
-### 📱 Holistic Flow
-- **Initiation Flow**: Cinematic splash screen with breathing aura animations and an interactive 3-pillar onboarding guide.
-- **Daily Dashboard**: Quick one-tap habit completions, streak tracking, and daily focus views.
-- **Habit Builder**: Customizable icons, colors, and flexible weekly frequency schedules.
-- **Analytics & History**: Detailed completion trends, streak records, and habit log breakdowns.
-- **Personalized Settings**: Real-time theme toggles, onboarding replays, and offline database management.
+By combining tactile frosted glassmorphism, soothing lavender accents, and responsive micro-interactions, HabitArc creates an atmosphere of quiet accomplishment—turning daily routines into moments of calm reflection.
 
 ---
 
-## 🎨 Color Palette & Themes
+## ✨ Core Pillars
 
-HabitArc uses a carefully curated spectrum of calming tones and pastel milestones:
-
-| Token | Light Theme | Dark Theme | Purpose |
-| :--- | :--- | :--- | :--- |
-| **Canvas / Surface** | `#FAF8FF` | `#12131A` | Main background base |
-| **Surface Container** | `#ECEDFB` | `#1E1F27` | Cards & floating panels |
-| **Primary Accent** | `#5F4DBA` | `#C9BFFF` | Core actions & active tabs |
-| **Primary Container** | `#9B8AFB` | `#9B8AFB` | Gradients & glowing highlights |
-| **Secondary Accent** | `#1E5BB8` | `#AEC6FF` | Supporting badges & pills |
-| **Tertiary Accent** | `#006B59` | `#65DABE` | Success states & milestone nodes |
-| **Sunrise Salmon** | `#FFB38A` | `#FFB38A` | Habit arc start point |
-| **Blush Pink** | `#F38BB8` | `#F38BB8` | Arc progression node |
-
----
-
-## 🛠 Tech Stack
-
-- **Framework**: [React Native](https://reactnative.dev/) with [Expo SDK 57](https://expo.dev/)
-- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) (File-based navigation)
-- **Local Database**: [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) with WAL journal mode
-- **Animations**: [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)
-- **Graphics**: [React Native SVG](https://github.com/software-mansion/react-native-svg) & [Expo Linear Gradient](https://docs.expo.dev/versions/latest/sdk/linear-gradient/)
-- **UI & Effects**: [Expo Blur](https://docs.expo.dev/versions/latest/sdk/blur/) & [@expo/vector-icons](https://icons.expo.fyi/)
-- **Storage & Security**: [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)
+<table>
+  <tr>
+    <td width="33%" align="center" valign="top">
+      <h3>⚡ Zero Friction</h3>
+      <p>Instant launch with zero logins, accounts, or mandatory sync. Open the app and log your habit in a single tactile tap.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <h3>🌱 Gentle Cadence</h3>
+      <p>Mindful progress visualization that eliminates streak anxiety. Celebrate showing up without fear of breaking momentum.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <h3>🔒 100% Private</h3>
+      <p>Built strictly local-first. All records, timestamps, and preferences live securely on your device inside an embedded SQLite database.</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 📁 Project Structure
+## 📱 Key Experiences
 
-```text
-HabitArc/
-├── app/
-│   ├── (tabs)/
-│   │   ├── _layout.jsx       # Custom glassmorphic floating bottom navigation
-│   │   ├── index.jsx         # Home dashboard & habit completion tracker
-│   │   ├── add.jsx           # Create new habits with icons & schedules
-│   │   ├── analytics.jsx     # Habit analytics & weekly trends
-│   │   └── settings.jsx      # Theme switch (Dark/Light) & settings
-│   ├── habit/
-│   │   └── [id].jsx          # Detailed habit view, stats & completion history
-│   ├── _layout.jsx           # App root with ThemeProvider & font loaders
-│   ├── index.jsx             # Initiation splash screen with breathing aura
-│   ├── onboarding.jsx        # 3-slide visual onboarding walkthrough
-│   └── +not-found.jsx        # 404 handler
-├── components/
-│   ├── ArcLogo.js            # Multi-gradient SVG arc logo with milestone nodes
-│   ├── ArcProgress.js        # Dynamic circular progress arc
-│   ├── Background.js         # Theme-aware ambient aura background
-│   ├── Button.js             # Pill-shaped primary, secondary, and ghost buttons
-│   ├── GlassView.js          # Cross-platform frosted glass container
-│   ├── TabBar.js             # Floating bottom glassmorphism tab bar
-│   └── ThemedText.js         # Typography component supporting Inter scale
-├── constants/
-│   └── Colors.js             # Calm Arc Flow color tokens for Light & Dark modes
-├── context/
-│   └── ThemeContext.js       # Global theme provider with persistence
-├── lib/
-│   ├── db.js                 # SQLite database initialization & CRUD operations
-│   └── supabase.js           # Optional cloud synchronization client
-├── package.json
-└── app.json
-```
+### 🌌 Initiation & Onboarding
+- **Launch Screen**: Subtle organic aura glows, breathing logo badge, and animated micro-dots.
+- **Mindful Walkthrough**: Interactive 3-slide introduction featuring the luminous 5-node Milestone Arc.
+- **Fast-Track Skip**: Option to jump directly into your daily flow with a single tap.
+
+### 🎯 Daily Tracking & Momentum
+- **Rising Arc Indicators**: Dynamic multi-gradient SVG arcs showing completion milestones.
+- **Tactile Cards**: Frosted glass containers (`GlassView`) with soft blur and gentle elevation.
+- **Customizable Habits**: Tailor icons, color accents, and weekly recurrence patterns.
+
+### 📊 Insights & Consistency
+- **Trend Analytics**: Comprehensive completion records and weekly momentum breakdowns.
+- **Streak Records**: Personal milestones tracked quietly in the background.
+
+### 🌗 Adaptive Theme Engine
+- **Dark Mode (`#12131A`)**: Deep atmospheric background crafted for nighttime unwinding.
+- **Light Mode (`#FAF8FF`)**: High-clarity lavender-tinted palette for daytime focus.
+- **Live Switching**: Seamlessly toggle themes on the fly from Settings.
 
 ---
 
-## 🚀 Getting Started
+## 🎨 Color Palette Specifications
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (version 18 or higher recommended)
-- [Expo Go](https://expo.dev/go) app on your mobile device (iOS / Android) or simulator
+The **Calm Arc Flow** palette establishes a serene visual rhythm using lavender as the anchor, complemented by gentle milestone progression hues:
 
-### Installation
+| Token | Hex (Light) | Hex (Dark) | Role & Semantics |
+| :--- | :---: | :---: | :--- |
+| **Canvas Background** | `#FAF8FF` | `#12131A` | Main application background |
+| **Surface Container** | `#ECEDFB` | `#1E1F27` | Interactive cards & layered surfaces |
+| **Primary Accent** | `#5F4DBA` | `#C9BFFF` | Active navigation & primary controls |
+| **Primary Glow** | `#9B8AFB` | `#9B8AFB` | Gradients, aura halos & glowing nodes |
+| **Secondary Accent** | `#1E5BB8` | `#AEC6FF` | Supporting chips, badges & tags |
+| **Tertiary / Mint** | `#006B59` | `#65DABE` | Milestone completion & success targets |
+| **Sunrise Salmon** | `#FFB38A` | `#FFB38A` | Arc origin milestone node |
+| **Blush Pink** | `#F38BB8` | `#F38BB8` | Arc progression milestone node |
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Soumya41509/habit-arc.git
-   cd habit-arc
-   ```
+---
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## 🛠 Architectural Foundation
 
-3. **Start the development server:**
-   ```bash
-   npx expo start
-   ```
-
-4. **Run on your device:**
-   - Scan the QR code with your iPhone camera or Android **Expo Go** app.
-   - Press `a` for Android emulator, `i` for iOS simulator, or `w` for Web.
+- **Client Runtime**: React Native 0.86 with Expo SDK 57
+- **Routing Engine**: Expo Router (Modern file-based hierarchy with native stack and tab transitions)
+- **Persistence Layer**: Embedded SQLite with Write-Ahead Logging (`WAL`) for instant sub-millisecond queries
+- **Animation Engine**: React Native Reanimated for 60fps fluid transformations and gestures
+- **Vector Graphics**: React Native SVG with custom linear gradients and glow filters
+- **Visual Depth**: Expo Blur for cross-platform glassmorphic backdrops
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — feel free to use and adapt it for personal or commercial projects.
+Distributed under the **MIT License**. Free for personal and commercial exploration.
 
----
+<br/>
 
 <div align="center">
-  <sub>Crafted with care for mindful living.</sub>
+  <sub>Designed & Developed for Mindful Daily Living.</sub>
 </div>
