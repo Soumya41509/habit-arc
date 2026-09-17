@@ -1,14 +1,14 @@
-<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="440" viewBox="0 0 1200 440" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Background Gradients -->
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0E0F15"/>
-      <stop offset="50%" stop-color="#14151E"/>
-      <stop offset="100%" stop-color="#0A0B10"/>
+    <!-- Deep Canvas Gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1200" y2="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0B0C12"/>
+      <stop offset="50%" stop-color="#12131C"/>
+      <stop offset="100%" stop-color="#09090E"/>
     </linearGradient>
 
-    <!-- Arc Glow -->
-    <linearGradient id="bannerArcGlow" x1="50" y1="280" x2="350" y2="60" gradientUnits="userSpaceOnUse">
+    <!-- Radiant Arc Spectrum -->
+    <linearGradient id="bannerArcGlow" x1="40" y1="280" x2="340" y2="60" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#FFB38A"/>
       <stop offset="25%" stop-color="#F38BB8"/>
       <stop offset="55%" stop-color="#9B8AFB"/>
@@ -16,108 +16,111 @@
       <stop offset="100%" stop-color="#2DAC92"/>
     </linearGradient>
 
+    <!-- Glass Dark Card -->
     <linearGradient id="cardGradDark" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1E1F2A" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#14151E" stop-opacity="0.75"/>
+      <stop offset="0%" stop-color="#1A1B26" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#12131E" stop-opacity="0.8"/>
     </linearGradient>
 
+    <!-- Glass Light Floating Pill -->
     <linearGradient id="cardGradLight" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#F2F3FF" stop-opacity="0.85"/>
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#F2F3FF" stop-opacity="0.9"/>
     </linearGradient>
 
+    <!-- Shadows & Blurs -->
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
 
-    <filter id="purpleGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="60" result="blur"/>
+    <filter id="ambientPurple" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="70" result="blur"/>
     </filter>
   </defs>
 
-  <!-- Base Canvas -->
-  <rect width="1200" height="420" rx="24" fill="url(#bgGrad)"/>
+  <!-- Canvas Surface -->
+  <rect width="1200" height="440" rx="28" fill="url(#bgGrad)"/>
 
-  <!-- Ambient Glow Orbs -->
-  <circle cx="200" cy="120" r="140" fill="#9B8AFB" fill-opacity="0.12" filter="url(#purpleGlow)"/>
-  <circle cx="1000" cy="300" r="160" fill="#2DAC92" fill-opacity="0.1" filter="url(#purpleGlow)"/>
-  <circle cx="650" cy="200" r="120" fill="#6A9CFD" fill-opacity="0.08" filter="url(#purpleGlow)"/>
+  <!-- Ambient Glow Halos -->
+  <circle cx="180" cy="120" r="160" fill="#9B8AFB" fill-opacity="0.13" filter="url(#ambientPurple)"/>
+  <circle cx="1020" cy="320" r="180" fill="#2DAC92" fill-opacity="0.11" filter="url(#ambientPurple)"/>
+  <circle cx="680" cy="220" r="140" fill="#6A9CFD" fill-opacity="0.09" filter="url(#ambientPurple)"/>
 
-  <!-- Inner Subtle Border -->
-  <rect x="1.5" y="1.5" width="1197" height="417" rx="22.5" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5"/>
+  <!-- Border Frame -->
+  <rect x="1" y="1" width="1198" height="438" rx="27" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5"/>
 
-  <!-- Left Hero Content -->
-  <g transform="translate(80, 80)">
+  <!-- Left Hero Block -->
+  <g transform="translate(84, 88)">
     <!-- Brand Pill Tag -->
-    <rect x="0" y="0" width="140" height="30" rx="15" fill="rgba(155, 138, 251, 0.12)" stroke="rgba(155, 138, 251, 0.3)" stroke-width="1"/>
-    <circle cx="16" cy="15" r="4" fill="#65DABE"/>
-    <text x="28" y="19.5" fill="#E5DEFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1.2">CALM ARC FLOW</text>
+    <rect x="0" y="0" width="146" height="32" rx="16" fill="rgba(155, 138, 251, 0.12)" stroke="rgba(155, 138, 251, 0.35)" stroke-width="1"/>
+    <circle cx="16" cy="16" r="4.5" fill="#65DABE"/>
+    <text x="28" y="20.5" fill="#E5DEFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="11" font-weight="700" letter-spacing="1.2">CALM ARC FLOW</text>
 
     <!-- Main Title -->
-    <text x="0" y="90" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="52" font-weight="800" letter-spacing="-1.5">Routiva</text>
+    <text x="0" y="96" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="56" font-weight="800" letter-spacing="-1.8">Routiva</text>
 
     <!-- Tagline -->
-    <text x="0" y="130" fill="#9B8AFB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="20" font-weight="600" letter-spacing="-0.3">Build your rhythm.</text>
-    <text x="0" y="162" fill="#938F9E" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="14" font-weight="400" letter-spacing="0.1">Mindful, private habit tracking powered by React Native &amp; SQLite.</text>
+    <text x="0" y="138" fill="#9B8AFB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="21" font-weight="600" letter-spacing="-0.4">Build your rhythm.</text>
+    <text x="0" y="170" fill="#938F9E" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="14" font-weight="400" letter-spacing="0.1">Mindful habit tracking &amp; routine flow powered by React Native &amp; SQLite.</text>
 
     <!-- Tech Badges Bar -->
-    <g transform="translate(0, 196)">
-      <!-- Badge 1: Local SQLite -->
-      <rect x="0" y="0" width="126" height="32" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.08)"/>
-      <text x="14" y="20" fill="#65DABE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">⚡ SQLite Engine</text>
+    <g transform="translate(0, 206)">
+      <!-- Badge 1: Local SQLite Engine -->
+      <rect x="0" y="0" width="132" height="34" rx="10" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.09)"/>
+      <text x="14" y="21.5" fill="#65DABE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">⚡ SQLite Engine</text>
 
       <!-- Badge 2: 100% Private -->
-      <rect x="136" y="0" width="118" height="32" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.08)"/>
-      <text x="150" y="20" fill="#AEC6FF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">🔒 100% Private</text>
+      <rect x="142" y="0" width="124" height="34" rx="10" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.09)"/>
+      <text x="156" y="21.5" fill="#AEC6FF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">🔒 100% Private</text>
 
-      <!-- Badge 3: Dual Mode -->
-      <rect x="264" y="0" width="124" height="32" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.08)"/>
-      <text x="278" y="20" fill="#FFB38A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">🌗 Dual Themes</text>
+      <!-- Badge 3: Dual Themes -->
+      <rect x="276" y="0" width="128" height="34" rx="10" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.09)"/>
+      <text x="290" y="21.5" fill="#FFB38A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="600">🌗 Dual Themes</text>
     </g>
   </g>
 
   <!-- Right Visual Feature Showcase -->
-  <g transform="translate(680, 50)">
+  <g transform="translate(680, 58)">
     <!-- Frosted Glass Card 1 (Dark Mode Preview) -->
-    <g filter="url(#softShadow)" transform="translate(40, 20)">
-      <rect width="360" height="280" rx="24" fill="url(#cardGradDark)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5"/>
+    <g filter="url(#softShadow)" transform="translate(40, 16)">
+      <rect width="368" height="290" rx="26" fill="url(#cardGradDark)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5"/>
       
       <!-- Card Header -->
-      <circle cx="36" cy="36" r="14" fill="rgba(155, 138, 251, 0.2)"/>
-      <path d="M 32 36 L 35 39 L 41 33" stroke="#9B8AFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="60" y="41" fill="#E3E1EC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="15" font-weight="700">Morning Rhythm</text>
-      <text x="290" y="41" fill="#65DABE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="700">84%</text>
+      <circle cx="38" cy="38" r="15" fill="rgba(155, 138, 251, 0.22)"/>
+      <path d="M 33 38 L 37 42 L 43 35" stroke="#9B8AFB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="64" y="43" fill="#E3E1EC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="16" font-weight="700">Daily Momentum</text>
+      <text x="298" y="43" fill="#65DABE" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="13" font-weight="700">84%</text>
 
       <!-- Central Arc SVG Graphic inside Card -->
-      <g transform="translate(180, 160)">
-        <!-- Track -->
-        <path d="M -110 50 A 110 110 0 1 1 90 -40" stroke="#292931" stroke-width="12" stroke-linecap="round" fill="none"/>
-        <!-- Radiant Progress -->
-        <path d="M -110 50 A 110 110 0 0 1 70 -75" stroke="url(#bannerArcGlow)" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <g transform="translate(184, 166)">
+        <!-- Track Background -->
+        <path d="M -115 54 A 115 115 0 1 1 95 -42" stroke="#262733" stroke-width="13" stroke-linecap="round" fill="none"/>
+        <!-- Radiant Progress Arc -->
+        <path d="M -115 54 A 115 115 0 0 1 74 -78" stroke="url(#bannerArcGlow)" stroke-width="13" stroke-linecap="round" fill="none"/>
         
         <!-- Milestone Node Spheres -->
-        <circle cx="-110" cy="50" r="7" fill="#FFB38A"/>
-        <circle cx="-90" cy="-20" r="8" fill="#F38BB8"/>
-        <circle cx="-35" cy="-75" r="9" fill="#9B8AFB"/>
-        <circle cx="25" cy="-85" r="8.5" fill="#6A9CFD"/>
-        <circle cx="70" cy="-75" r="11" fill="#2DAC92"/>
-        <circle cx="70" cy="-75" r="4" fill="#FFFFFF"/>
+        <circle cx="-115" cy="54" r="7.5" fill="#FFB38A"/>
+        <circle cx="-94" cy="-22" r="8.5" fill="#F38BB8"/>
+        <circle cx="-38" cy="-80" r="9.5" fill="#9B8AFB"/>
+        <circle cx="28" cy="-90" r="9" fill="#6A9CFD"/>
+        <circle cx="74" cy="-78" r="12" fill="#2DAC92"/>
+        <circle cx="74" cy="-78" r="4.5" fill="#FFFFFF"/>
       </g>
 
       <!-- Bottom Status Row -->
-      <rect x="24" y="216" width="312" height="42" rx="14" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.06)"/>
-      <circle cx="44" cy="237" r="4" fill="#65DABE"/>
-      <text x="56" y="242" fill="#938F9E" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="500">21-Day Streak • Momentum Active</text>
+      <rect x="24" y="224" width="320" height="44" rx="14" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.06)"/>
+      <circle cx="44" cy="246" r="4.5" fill="#65DABE"/>
+      <text x="58" y="250.5" fill="#938F9E" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="12" font-weight="500">21-Day Streak • Rhythm Flow Active</text>
     </g>
 
     <!-- Frosted Glass Card 2 (Light Mode Floating Badge Overlay) -->
-    <g filter="url(#softShadow)" transform="translate(0, 190)">
-      <rect width="210" height="74" rx="20" fill="url(#cardGradLight)" stroke="rgba(255, 255, 255, 0.9)" stroke-width="1.5"/>
-      <circle cx="36" cy="37" r="16" fill="#E5DEFF"/>
-      <path d="M 30 37 Q 36 28 42 37" stroke="#5F4DBA" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-      <circle cx="42" cy="37" r="3" fill="#006B59"/>
-      <text x="64" y="32" fill="#181B25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="13" font-weight="700">Light Mode</text>
-      <text x="64" y="49" fill="#747989" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="11" font-weight="500">Calm Arc Styling</text>
+    <g filter="url(#softShadow)" transform="translate(0, 196)">
+      <rect width="218" height="78" rx="22" fill="url(#cardGradLight)" stroke="rgba(255, 255, 255, 0.95)" stroke-width="1.5"/>
+      <circle cx="38" cy="39" r="17" fill="#E5DEFF"/>
+      <path d="M 31 39 Q 38 29 45 39" stroke="#5F4DBA" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+      <circle cx="45" cy="39" r="3.5" fill="#006B59"/>
+      <text x="68" y="34" fill="#181B25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="13.5" font-weight="700">Light Mode</text>
+      <text x="68" y="52" fill="#747989" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif" font-size="11" font-weight="500">Calm Arc Flow</text>
     </g>
   </g>
 </svg>
