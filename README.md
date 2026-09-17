@@ -65,26 +65,9 @@ By combining tactile frosted glassmorphism, soothing lavender accents, and respo
 - **Streak Records**: Personal milestones tracked quietly in the background.
 
 ### 🌗 Adaptive Theme Engine
-- **Dark Mode (`#12131A`)**: Deep atmospheric background crafted for nighttime unwinding.
-- **Light Mode (`#FAF8FF`)**: High-clarity lavender-tinted palette for daytime focus.
+- **Dark Mode**: Deep atmospheric background crafted for nighttime unwinding.
+- **Light Mode**: High-clarity lavender-tinted palette for daytime focus.
 - **Live Switching**: Seamlessly toggle themes on the fly from Settings.
-
----
-
-## 🎨 Color Palette Specifications
-
-The **Calm Arc Flow** palette establishes a serene visual rhythm using lavender as the anchor, complemented by gentle milestone progression hues:
-
-| Token | Hex (Light) | Hex (Dark) | Role & Semantics |
-| :--- | :---: | :---: | :--- |
-| **Canvas Background** | `#FAF8FF` | `#12131A` | Main application background |
-| **Surface Container** | `#ECEDFB` | `#1E1F27` | Interactive cards & layered surfaces |
-| **Primary Accent** | `#5F4DBA` | `#C9BFFF` | Active navigation & primary controls |
-| **Primary Glow** | `#9B8AFB` | `#9B8AFB` | Gradients, aura halos & glowing nodes |
-| **Secondary Accent** | `#1E5BB8` | `#AEC6FF` | Supporting chips, badges & tags |
-| **Tertiary / Mint** | `#006B59` | `#65DABE` | Milestone completion & success targets |
-| **Sunrise Salmon** | `#FFB38A` | `#FFB38A` | Arc origin milestone node |
-| **Blush Pink** | `#F38BB8` | `#F38BB8` | Arc progression milestone node |
 
 ---
 
