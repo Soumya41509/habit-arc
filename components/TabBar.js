@@ -1,18 +1,18 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { GlassView } from './GlassView';
-import { Colors } from '../constants/Colors';
-import { useColorScheme } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export function TabBar({ state, descriptors, navigation }) {
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === 'dark';
-    const activeColor = isDark ? Colors.dark.tint : Colors.light.tint;
-    const inactiveColor = isDark ? Colors.dark.tabIconDefault : Colors.light.tabIconDefault;
+    const { isDark, colors } = useTheme();
+    const activeColor = isDark ? colors.primary : colors.primary;
+    const inactiveColor = colors.subtext;
 
     return (
         <View style={styles.container}>
-            <GlassView intensity={80} style={styles.glass}>
+            <GlassView intensity={85} style={styles.glass}>
                 <View style={styles.content}>
                     {state.routes.map((route, index) => {
                         const { options } = descriptors[route.key];
@@ -41,13 +41,21 @@ export function TabBar({ state, descriptors, navigation }) {
                                 <TouchableOpacity
                                     key={index}
                                     onPress={onPress}
+                                    activeOpacity={0.88}
                                     style={styles.addButton}
                                 >
-                                    <View style={[styles.addIcon, { backgroundColor: activeColor }]}>
-                                        <Ionicons name="add" size={32} color="#fff" />
-                                    </View>
+                                    <LinearGradient
+                                        colors={
+                                            isDark
+                                                ? ['#9B8AFB', '#7C67EE']
+                                                : ['#9B8AFB', '#6A9CFD']
+                                        }
+                                        style={styles.addIcon}
+                                    >
+                                        <Ionicons name="add" size={30} color="#FFFFFF" />
+                                    </LinearGradient>
                                 </TouchableOpacity>
-                            )
+                            );
                         }
 
                         return (
@@ -59,12 +67,24 @@ export function TabBar({ state, descriptors, navigation }) {
                                 testID={options.tabBarTestID}
                                 onPress={onPress}
                                 style={styles.tab}
+                                activeOpacity={0.7}
                             >
-                                <Ionicons
-                                    name={iconName}
-                                    size={24}
-                                    color={isFocused ? activeColor : inactiveColor}
-                                />
+                                <View
+                                    style={[
+                                        styles.tabIconWrap,
+                                        isFocused && {
+                                            backgroundColor: isDark
+                                                ? 'rgba(155, 138, 251, 0.15)'
+                                                : 'rgba(95, 77, 186, 0.1)',
+                                        },
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name={iconName}
+                                        size={22}
+                                        color={isFocused ? activeColor : inactiveColor}
+                                    />
+                                </View>
                             </TouchableOpacity>
                         );
                     })}
@@ -77,22 +97,27 @@ export function TabBar({ state, descriptors, navigation }) {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 30,
+        bottom: Platform.OS === 'ios' ? 26 : 16,
         left: 20,
         right: 20,
         alignItems: 'center',
     },
     glass: {
-        borderRadius: 35,
-        height: 70,
+        borderRadius: 9999,
+        height: 64,
         width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+        elevation: 6,
     },
     content: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
         height: '100%',
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
     },
     tab: {
         flex: 1,
@@ -100,24 +125,31 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         height: '100%',
     },
+    tabIconWrap: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     addButton: {
-        top: -20,
+        top: -16,
         justifyContent: 'center',
         alignItems: 'center',
     },
     addIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 54,
+        height: 54,
+        borderRadius: 27,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: "#000",
+        shadowColor: '#9B8AFB',
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 6,
         },
-        shadowOpacity: 0.30,
-        shadowRadius: 4.65,
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
         elevation: 8,
     },
 });
