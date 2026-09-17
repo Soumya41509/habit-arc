@@ -11,7 +11,8 @@ A mindful, private, and aesthetic habit-tracking mobile experience crafted with 
 [![React Native](https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-SDK_57-000020?style=flat-square&logo=expo&logoColor=white)](https://expo.dev/)
 [![SQLite](https://img.shields.io/badge/SQLite-Local_First-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-9B8AFB?style=flat-square)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-EF4444?style=flat-square&logo=lock&logoColor=white)](LICENSE)
+[![Status: Private Codebase](https://img.shields.io/badge/Copyright-All_Rights_Reserved-181B25?style=flat-square)](LICENSE)
 
 <br/>
 
@@ -82,12 +83,20 @@ By combining tactile frosted glassmorphism, soothing lavender accents, and respo
 
 ---
 
-## 📄 License
+## 🔒 Proprietary License & Copyright
 
-Distributed under the **MIT License**. Free for personal and commercial exploration.
+```
+Copyright © 2026 Soumya Ranjan Panigrahi (Soumya41509). All Rights Reserved.
+```
+
+> **IMPORTANT NOTICE:**  
+> This software, including its design systems, animations, source code, and assets, is **PROPRIETARY and CONFIDENTIAL**.  
+> **Strictly Not for Copying or Redistribution:** No part of this codebase may be copied, reproduced, distributed, reverse-engineered, sublicensed, or used for derivative works or commercial purposes in any form without prior written authorization from the copyright holder.
+
+For permissions or inquiries: `soumyaranjanpanigrahi111@gmail.com`
 
 <br/>
 
 <div align="center">
-  <sub>Designed & Developed for Mindful Daily Living.</sub>
+  <sub>© 2026 HabitArc • Soumya Ranjan Panigrahi. All Rights Reserved.</sub>
 </div>
